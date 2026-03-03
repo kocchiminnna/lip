@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LipMatch - 理想の色を見つけよう</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2691NYJPGX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-2691NYJPGX');
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1089,6 +1098,40 @@
       hexLabel.textContent = hex.toUpperCase();
     }
 
+    // 色系統を判定する関数
+    function getColorCategory(r, g, b) {
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const l = (max + min) / 2 / 255;
+      const d = max - min;
+      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)) / 255;
+      let h = 0;
+      if (d !== 0) {
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+        else if (max === g) h = ((b - r) / d + 2) * 60;
+        else h = ((r - g) / d + 4) * 60;
+      }
+      // 彩度が低い場合
+      if (s < 0.12) {
+        if (l > 0.85) return 'ホワイト系';
+        if (l > 0.6) return 'ベージュ系';
+        if (l > 0.3) return 'グレー系';
+        return 'ダーク系';
+      }
+      // 明度が非常に低い
+      if (l < 0.15) return 'ダーク系';
+      // 色相で分類
+      if (h < 10 || h >= 350) return 'レッド系';
+      if (h < 25) return 'コーラル系';
+      if (h < 40) return 'オレンジ系';
+      if (h < 50) return 'ベージュ系';
+      if (h < 70) return 'ブラウン系';
+      if (h < 170) return 'グリーン系';
+      if (h < 260) return 'ブルー系';
+      if (h < 290) return 'パープル系';
+      if (h < 330) return 'モーブ・ローズ系';
+      return 'ピンク系';
+    }
+
     colorInput.addEventListener('input', (e) => {
       const color = e.target.value.toUpperCase();
       applyColor(color);
@@ -1165,6 +1208,17 @@
 
     searchBtn.addEventListener('click', () => {
       const selectedColor = colorInput.value;
+
+      // GA4: 検索された色と系統を記録
+      if (typeof gtag === 'function') {
+        const rgb = hexToRgb(selectedColor);
+        const category = getColorCategory(rgb.r, rgb.g, rgb.b);
+        gtag('event', 'color_search', {
+          searched_color: selectedColor.toUpperCase(),
+          color_category: category
+        });
+      }
+
       const matches = LIPSTICK_DB.map(item => ({
         ...item,
         matchPercent: calculateMatch(selectedColor, item.color)
@@ -1227,6 +1281,23 @@
       });
 
       resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // GA4: Qoo10/Amazonクリック記録
+      resultsList.querySelectorAll('.shop-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (typeof gtag === 'function') {
+            const card = this.closest('.result-card');
+            const brand = card.querySelector('.result-brand').textContent;
+            const name = card.querySelector('.result-name').textContent;
+            const shop = this.classList.contains('shop-btn-qoo') ? 'Qoo10' : 'Amazon';
+            gtag('event', 'shop_click', {
+              shop_name: shop,
+              product_brand: brand,
+              product_name: name
+            });
+          }
+        });
+      });
     }
   </script>
 
