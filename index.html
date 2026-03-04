@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LipMatch - 理想の色を見つけよう</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title id="page-title">LipMatch - 理想の色を見つけよう</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Noto+Serif+KR:wght@400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Google Analytics 4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2691NYJPGX"></script>
@@ -446,6 +446,40 @@
       line-height: 1.8;
       letter-spacing: 0.02em;
     }
+
+    /* ── LANGUAGE SWITCHER ── */
+    .lang-switcher {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 4px;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 10px;
+      padding: 4px;
+      box-shadow: 0 2px 12px rgba(120,60,20,0.12);
+    }
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: #B8917A;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 6px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Shippori Mincho', serif;
+    }
+    .lang-btn:hover { background: rgba(139,79,46,0.08); }
+    .lang-btn.active {
+      background: #8B5538;
+      color: #FFF;
+    }
     .lm-footer {
       text-align: center;
       padding: 24px 0 20px;
@@ -465,11 +499,18 @@
 </head>
 <body>
 
+  <!-- ── LANGUAGE SWITCHER ── -->
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="switchLang('ja')">JP</button>
+    <button class="lang-btn" onclick="switchLang('ko')">KR</button>
+    <button class="lang-btn" onclick="switchLang('en')">EN</button>
+  </div>
+
   <!-- ── HEADER ── -->
   <header class="lm-header">
     <p class="lm-eyebrow">Colour Matching</p>
     <h1 class="lm-logo">Lip<em>Match</em></h1>
-    <p class="lm-subtitle">理想の色を、あなたの唇へ。</p>
+    <p class="lm-subtitle" data-i18n="subtitle">理想の色を、あなたの唇へ。</p>
     <div class="lm-divider"></div>
   </header>
 
@@ -477,7 +518,7 @@
 
     <!-- ── DASHBOARD CARD ── -->
     <div class="lm-card">
-      <div class="lm-card-label">あなたの理想のリップカラー</div>
+      <div class="lm-card-label" data-i18n="cardLabel">あなたの理想のリップカラー</div>
 
       <!-- Color ring + hex display -->
       <div class="lm-picker-row">
@@ -493,7 +534,7 @@
         </div>
         <div class="lm-hex-info">
           <span id="hex-label">#BE185D</span>
-          <span class="lm-tap-hint">丸をタップして色を選択</span>
+          <span class="lm-tap-hint" data-i18n="tapHint">丸をタップして色を選択</span>
         </div>
       </div>
 
@@ -517,12 +558,12 @@
       </div>
 
       <!-- Search button (same id as original) -->
-      <button id="search-btn">似ているリップを探す &nbsp;→</button>
+      <button id="search-btn" data-i18n="searchBtn">似ているリップを探す &nbsp;→</button>
     </div>
 
     <!-- ── RESULTS ── -->
     <section id="results-container">
-      <h2 class="lm-results-heading">あなたへのおすすめ</h2>
+      <h2 class="lm-results-heading" data-i18n="resultsHeading">あなたへのおすすめ</h2>
       <div class="lm-results-rule"><span>◆</span></div>
       <div id="results-list"></div>
     </section>
@@ -530,11 +571,11 @@
   </div>
 
   <div class="lm-notice">
-    ※ 表示される色はお使いのデバイスの画面設定や光の加減により実際の色と異なる場合があります。また、唇の元の色や質感によっても仕上がりは個人差があります。
+    <span data-i18n="disclaimer">※ 表示される色はお使いのデバイスの画面設定や光の加減により実際の色と異なる場合があります。また、唇の元の色や質感によっても仕上がりは個人差があります。</span>
   </div>
 
   <footer class="lm-footer">
-    管理者：<a href="https://x.com/gn0yCrbha65833" target="_blank" rel="noopener">@gn0yCrbha65833</a><br>
+    <span data-i18n="admin">管理者</span>：<a href="https://x.com/gn0yCrbha65833" target="_blank" rel="noopener">@gn0yCrbha65833</a><br>
     © 2025 LipMatch
   </footer>
 
@@ -1332,6 +1373,193 @@
       renderResults(diverse);
     });
 
+
+
+    // ── 製品名翻訳辞書 ──
+    const productNameI18n = {
+      ko: {
+        '#花雨グロス デューステインシアーリップグロス': '#화우 글로스 듀 스테인 시어 립 글로스',
+        '3Dジェリーリップ': '3D 젤리 립',
+        '3Dボリューミングティント': '3D 볼류밍 틴트',
+        'むちぷるティント': '무치푸루 틴트',
+        'アディクト リップ グロウ': 'Addict Lip Glow',
+        'アディクトリップマキシマイザー': 'Addict Lip Maximizer',
+        'インク ムード グロイ ティント': '잉크 무드 글로이 틴트',
+        'ウォータリーティントリップ': '워터리 틴트 립',
+        'ウォーターリズムグロウティント': '워터 리듬 글로우 틴트',
+        'クリスタルグラムティント': '크리스탈 글램 틴트',
+        'グラスティングカラーグロス': '글래스팅 컬러 글로스',
+        'グラスティングメルティングバーム': '글래스팅 멜팅 밤',
+        'グラスティントシロップ': '글래스 틴트 시럽',
+        'グレーズ リップ セラム': '글레이즈 립 세럼',
+        'グローリップティント': '글로우 립 틴트',
+        'ザ マット リップ リキッド': '더 매트 립 리퀴드',
+        'ザジューシーラスティングティント': '쥬시 래스팅 틴트',
+        'ジェリーフィットティンティッドグロウティント': '젤리핏 틴티드 글로우 틴트',
+        'ジューシーデュイティント': '쥬시 듀이 틴트',
+        'ジューシーデューイグロウティント': '쥬시 듀이 글로우 틴트',
+        'ステイオンバームルージュ': '스테이 온 밤 루즈',
+        'スーパーマットリップ＆チークマッド リップ＆チーク': '슈퍼 매트 립 & 치크 매드 립 & 치크',
+        'ゼロベルベットティント': '제로 벨벳 틴트',
+        'ゼロマットリップスティック': '제로 매트 립스틱',
+        'チャームティント　グロッシージェル': '참 틴트 글로시 젤',
+        'デビルリップ': '데빌 립',
+        'パウダー キス ヘイジー マット リップスティック': 'Powder Kiss Hazy Matte Lipstick',
+        'フルーティグラムティント': '프루티 글램 틴트',
+        'ボンディンググロウリップスティック': '본딩 글로우 립스틱',
+        'ポッピングバルーンティント': '팝핑 벌룬 틴트',
+        'マキシグレイヤーティント': '맥시 글레이어 틴트',
+        'ラスターガラス リップスティック': 'Luster Glass Lipstick',
+        'ラスティングリップスティック': '래스팅 립스틱',
+        'ラブシャイン キャンディ グロウ バーム': 'Loveshiner Candy Glow Balm',
+        'ラブシャイン グロスプランパー': 'Loveshiner Gloss Plumper',
+        'ラブシャイン リップスティック': 'Loveshiner Lipstick',
+        'リップカラーシールド': '립 컬러 쉴드',
+        'リップティント': '립 틴트',
+        'リップモンスター　スフレマット': '립몬스터 수플레 매트',
+        'ル　ルージュデュオ　ウルトラ　トゥニュ': 'Le Rouge Duo Ultra Tenue',
+        'ローティント': '로우 틴트',
+      },
+      en: {
+        '#花雨グロス デューステインシアーリップグロス': '#Hanau Gloss Dew Stain Sheer Lip Gloss',
+        '3Dジェリーリップ': '3D Jelly Lip',
+        '3Dボリューミングティント': '3D Voluming Tint',
+        'むちぷるティント': 'Muchipuru Tint',
+        'アディクト リップ グロウ': 'Addict Lip Glow',
+        'アディクトリップマキシマイザー': 'Addict Lip Maximizer',
+        'インク ムード グロイ ティント': 'Ink Mood Glowy Tint',
+        'ウォータリーティントリップ': 'Watery Tint Lip',
+        'ウォーターリズムグロウティント': 'Water Rhythm Glow Tint',
+        'クリスタルグラムティント': 'Crystal Glam Tint',
+        'グラスティングカラーグロス': 'Glasting Color Gloss',
+        'グラスティングメルティングバーム': 'Glasting Melting Balm',
+        'グラスティントシロップ': 'Glass Tint Syrup',
+        'グレーズ リップ セラム': 'Glaze Lip Serum',
+        'グローリップティント': 'Glow Lip Tint',
+        'ザ マット リップ リキッド': 'The Matte Lip Liquid',
+        'ザジューシーラスティングティント': 'Juicy Lasting Tint',
+        'ジェリーフィットティンティッドグロウティント': 'Jellyfit Tinted Glow Tint',
+        'ジューシーデュイティント': 'Juicy Dewy Tint',
+        'ジューシーデューイグロウティント': 'Juicy Dewy Glow Tint',
+        'ステイオンバームルージュ': 'Stay On Balm Rouge',
+        'スーパーマットリップ＆チークマッド リップ＆チーク': 'Super Matte Lip & Cheek Mud',
+        'ゼロベルベットティント': 'Zero Velvet Tint',
+        'ゼロマットリップスティック': 'Zero Matte Lipstick',
+        'チャームティント　グロッシージェル': 'Charm Tint Glossy Gel',
+        'デビルリップ': 'Devil Lip',
+        'パウダー キス ヘイジー マット リップスティック': 'Powder Kiss Hazy Matte Lipstick',
+        'フルーティグラムティント': 'Fruity Glam Tint',
+        'ボンディンググロウリップスティック': 'Bonding Glow Lipstick',
+        'ポッピングバルーンティント': 'Popping Balloon Tint',
+        'マキシグレイヤーティント': 'Maxi Glayer Tint',
+        'ラスターガラス リップスティック': 'Luster Glass Lipstick',
+        'ラスティングリップスティック': 'Lasting Lipstick',
+        'ラブシャイン キャンディ グロウ バーム': 'Loveshiner Candy Glow Balm',
+        'ラブシャイン グロスプランパー': 'Loveshiner Gloss Plumper',
+        'ラブシャイン リップスティック': 'Loveshiner Lipstick',
+        'リップカラーシールド': 'Lip Colour Shield',
+        'リップティント': 'Lip Tint',
+        'リップモンスター　スフレマット': 'Lip Monster Souffle Matte',
+        'ル　ルージュデュオ　ウルトラ　トゥニュ': 'Le Rouge Duo Ultra Tenue',
+        'ローティント': 'Raw Tint',
+      }
+    };
+
+    function translateProductName(name, lang) {
+      if (lang === 'ja') return name;
+      const dict = productNameI18n[lang];
+      if (!dict) return name;
+      // 製品名部分（色番号の前の部分）を検索して置換
+      for (const [ja, translated] of Object.entries(dict)) {
+        if (name.includes(ja)) {
+          return name.replace(ja, translated);
+        }
+      }
+      return name;
+    }
+
+    // ── i18n 多言語対応 ──
+    const i18n = {
+      ja: {
+        title: 'LipMatch - 理想の色を見つけよう',
+        subtitle: '理想の色を、あなたの唇へ。',
+        cardLabel: 'あなたの理想のリップカラー',
+        tapHint: '丸をタップして色を選択',
+        searchBtn: '似ているリップを探す \u00a0→',
+        resultsHeading: 'あなたへのおすすめ',
+        disclaimer: '※ 表示される色はお使いのデバイスの画面設定や光の加減により実際の色と異なる場合があります。また、唇の元の色や質感によっても仕上がりは個人差があります。',
+        admin: '管理者',
+        matte: 'MATTE',
+        match: 'MATCH',
+        fontBody: "'Shippori Mincho', serif",
+      },
+      ko: {
+        title: 'LipMatch - 이상적인 색을 찾아보세요',
+        subtitle: '이상적인 색을, 당신의 입술에.',
+        cardLabel: '나만의 이상적인 립 컬러',
+        tapHint: '원을 탭하여 색상 선택',
+        searchBtn: '비슷한 립 찾기 \u00a0→',
+        resultsHeading: '당신을 위한 추천',
+        disclaimer: '※ 표시되는 색상은 기기의 화면 설정이나 조명에 따라 실제 색상과 다를 수 있습니다. 또한 입술의 원래 색상과 질감에 따라 발색이 달라질 수 있습니다.',
+        admin: '관리자',
+        matte: 'MATTE',
+        match: 'MATCH',
+        fontBody: "'Noto Serif KR', serif",
+      },
+      en: {
+        title: 'LipMatch - Find Your Perfect Shade',
+        subtitle: 'Your perfect shade, for your lips.',
+        cardLabel: 'Your Ideal Lip Colour',
+        tapHint: 'Tap the circle to pick a colour',
+        searchBtn: 'Find Similar Lipsticks \u00a0→',
+        resultsHeading: 'Recommended For You',
+        disclaimer: '※ Colours shown may differ from the actual product depending on your device settings and lighting. Results may also vary based on your natural lip colour and texture.',
+        admin: 'Admin',
+        matte: 'MATTE',
+        match: 'MATCH',
+        fontBody: "'Shippori Mincho', serif",
+      }
+    };
+
+    let currentLang = 'ja';
+
+    function switchLang(lang) {
+      currentLang = lang;
+      const t = i18n[lang];
+
+      // Update page title
+      document.getElementById('page-title').textContent = t.title;
+
+      // Update all data-i18n elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.innerHTML = t[key];
+      });
+
+      // Update body font
+      document.body.style.fontFamily = t.fontBody;
+
+      // Update lang-btn active state
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if ((lang === 'ja' && btn.textContent === 'JP') ||
+            (lang === 'ko' && btn.textContent === 'KR') ||
+            (lang === 'en' && btn.textContent === 'EN')) {
+          btn.classList.add('active');
+        }
+      });
+
+      // Update html lang attribute
+      document.documentElement.lang = lang;
+
+      // Re-render results if visible
+      if (resultsContainer.classList.contains('visible') && lastResults.length > 0) {
+        renderResults(lastResults);
+      }
+    }
+
+    let lastResults = [];
+
     function renderResults(items) {
       resultsList.innerHTML = '';
       resultsContainer.classList.add('visible');
@@ -1347,7 +1575,7 @@
           </div>
           <div class="result-info">
             <p class="result-brand">${item.brand}</p>
-            <h3 class="result-name">${item.name}${item.matte ? '<span class="matte-tag">MATTE</span>' : ''}</h3>
+            <h3 class="result-name">${translateProductName(item.name, currentLang)}${item.matte ? '<span class="matte-tag">' + i18n[currentLang].matte + '</span>' : ''}</h3>
             <span class="result-hex-chip">${item.color}</span>
             <div class="result-shops">
               ${getQoo10Link(item.brand, item.name) ? `<a href="${getQoo10Link(item.brand, item.name)}" class="shop-btn shop-btn-qoo" target="_blank" rel="noopener">Qoo10</a>` : ''}
@@ -1356,13 +1584,14 @@
           </div>
           <div class="result-right">
             <div class="result-pct">${item.matchPercent}<sup>%</sup></div>
-            <div class="result-match-label">MATCH</div>
+            <div class="result-match-label">${i18n[currentLang].match}</div>
             <div class="result-bar"><div class="result-bar-fill" style="width:${item.matchPercent}%"></div></div>
           </div>
         `;
         resultsList.appendChild(card);
       });
 
+      lastResults = items;
       resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       // GA4: Qoo10/Amazonクリック記録
