@@ -495,6 +495,126 @@
     .lm-footer a:hover {
       text-decoration: underline;
     }
+
+    /* ── モード切り替えタブ ── */
+    .lm-mode-tabs {
+      display: flex;
+      background: #F0E6DE;
+      border-radius: 12px;
+      padding: 3px;
+      margin-bottom: 24px;
+      gap: 3px;
+    }
+    .lm-mode-tab {
+      flex: 1;
+      padding: 9px 6px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 11px;
+      font-family: 'Shippori Mincho', serif;
+      color: #B8917A;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+    }
+    .lm-mode-tab.active {
+      background: white;
+      color: #3B2010;
+      box-shadow: 0 1px 4px rgba(120,60,20,0.12);
+    }
+
+    /* ── 写真アップロードエリア ── */
+    .lm-photo-area { display: none; }
+    .lm-upload-zone {
+      border: 2px dashed #C8A48A;
+      border-radius: 18px;
+      padding: 30px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 16px;
+      background: rgba(255,255,255,0.5);
+    }
+    .lm-upload-zone:hover { border-color: #A06840; background: rgba(255,255,255,0.8); }
+    .lm-upload-zone-icon { font-size: 30px; margin-bottom: 8px; }
+    .lm-upload-zone-text { font-size: 11px; color: #B8917A; letter-spacing: 0.08em; }
+
+    .lm-photo-preview-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      display: none;
+      cursor: crosshair;
+      box-shadow: 0 4px 20px rgba(120,60,20,0.15);
+    }
+    .lm-photo-preview-wrap.visible { display: block; }
+    #photo-canvas { width: 100%; display: block; }
+    .lm-pick-hint {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(59,32,16,0.72));
+      color: white;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      padding: 20px 16px 10px;
+      text-align: center;
+    }
+    .lm-cursor-ring {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2.5px solid white;
+      box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      display: none;
+      transition: left 0.05s, top 0.05s;
+    }
+    .lm-extracted-preview {
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .lm-extracted-preview.visible { display: flex; }
+    .lm-extracted-swatch {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(120,60,20,0.2);
+      flex-shrink: 0;
+    }
+    .lm-extracted-info { flex: 1; }
+    .lm-extracted-hex {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #3B2010;
+    }
+    .lm-extracted-label { font-size: 10px; color: #B8917A; letter-spacing: 0.1em; }
+    .lm-use-color-btn {
+      font-size: 10px;
+      font-family: 'Shippori Mincho', serif;
+      padding: 8px 14px;
+      background: linear-gradient(90deg, #8B4F2E 0%, #C08050 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .lm-use-color-btn:hover { opacity: 0.85; }
   </style>
 </head>
 <body>
@@ -520,40 +640,72 @@
     <div class="lm-card">
       <div class="lm-card-label" data-i18n="cardLabel">あなたの理想のリップカラー</div>
 
-      <!-- Color ring + hex display -->
-      <div class="lm-picker-row">
-        <div class="lm-ring-wrap">
-          <!-- 破線の外リング -->
-          <div class="lm-ring-dashed"></div>
-          <!-- 破線とカラー円の間の白い余白 -->
-          <div class="lm-ring-gap"></div>
-          <!-- カラー表示円 -->
-          <div id="color-preview"></div>
-          <!-- 透明なカラーピッカー（全体タップ可能） -->
-          <input type="color" id="color-input" value="#BE185D" />
+      <!-- ── モード切り替えタブ ── -->
+      <div class="lm-mode-tabs">
+        <button class="lm-mode-tab active" id="tab-color" onclick="switchMode('color')" data-i18n="tabColor">🎨 カラーを選ぶ</button>
+        <button class="lm-mode-tab" id="tab-photo" onclick="switchMode('photo')" data-i18n="tabPhoto">📷 写真から抽出</button>
+      </div>
+
+      <!-- ── 写真アップロードエリア ── -->
+      <div class="lm-photo-area" id="photo-area">
+        <div class="lm-upload-zone" id="upload-zone" onclick="document.getElementById('photo-file-input').click()">
+          <div class="lm-upload-zone-icon">📷</div>
+          <div class="lm-upload-zone-text" data-i18n="uploadHint">画像をタップして選択</div>
         </div>
-        <div class="lm-hex-info">
-          <span id="hex-label">#BE185D</span>
-          <span class="lm-tap-hint" data-i18n="tapHint">丸をタップして色を選択</span>
+        <input type="file" id="photo-file-input" accept="image/*" style="display:none" />
+        <!-- 画像プレビュー＆色抽出キャンバス -->
+        <div class="lm-photo-preview-wrap" id="photo-preview-wrap">
+          <canvas id="photo-canvas"></canvas>
+          <div class="lm-cursor-ring" id="cursor-ring"></div>
+          <div class="lm-pick-hint" data-i18n="pickHint">タップして色を抽出</div>
+        </div>
+        <!-- 抽出した色プレビュー -->
+        <div class="lm-extracted-preview" id="extracted-preview">
+          <div class="lm-extracted-swatch" id="extracted-swatch"></div>
+          <div class="lm-extracted-info">
+            <div class="lm-extracted-hex" id="extracted-hex">#BE185D</div>
+            <div class="lm-extracted-label" data-i18n="extractedLabel">抽出した色</div>
+          </div>
+          <button class="lm-use-color-btn" id="use-color-btn" data-i18n="useColorBtn">この色で検索</button>
         </div>
       </div>
 
-      <!-- RGB sliders (display only, synced to color-input) -->
-      <div class="lm-sliders">
-        <div class="lm-slider-row">
-          <span class="lm-slider-label">R</span>
-          <input class="lm-range lm-range-r" type="range" id="slider-r" min="0" max="255" value="190" />
-          <span class="lm-slider-val" id="val-r">190</span>
+      <!-- ── カラーピッカーエリア ── -->
+      <div class="lm-color-area" id="color-area">
+        <!-- Color ring + hex display -->
+        <div class="lm-picker-row">
+          <div class="lm-ring-wrap">
+            <!-- 破線の外リング -->
+            <div class="lm-ring-dashed"></div>
+            <!-- 破線とカラー円の間の白い余白 -->
+            <div class="lm-ring-gap"></div>
+            <!-- カラー表示円 -->
+            <div id="color-preview"></div>
+            <!-- 透明なカラーピッカー（全体タップ可能） -->
+            <input type="color" id="color-input" value="#BE185D" />
+          </div>
+          <div class="lm-hex-info">
+            <span id="hex-label">#BE185D</span>
+            <span class="lm-tap-hint" data-i18n="tapHint">丸をタップして色を選択</span>
+          </div>
         </div>
-        <div class="lm-slider-row">
-          <span class="lm-slider-label">G</span>
-          <input class="lm-range lm-range-g" type="range" id="slider-g" min="0" max="255" value="24" />
-          <span class="lm-slider-val" id="val-g">24</span>
-        </div>
-        <div class="lm-slider-row">
-          <span class="lm-slider-label">B</span>
-          <input class="lm-range lm-range-b" type="range" id="slider-b" min="0" max="255" value="93" />
-          <span class="lm-slider-val" id="val-b">93</span>
+        <!-- RGB sliders (display only, synced to color-input) -->
+        <div class="lm-sliders">
+          <div class="lm-slider-row">
+            <span class="lm-slider-label">R</span>
+            <input class="lm-range lm-range-r" type="range" id="slider-r" min="0" max="255" value="190" />
+            <span class="lm-slider-val" id="val-r">190</span>
+          </div>
+          <div class="lm-slider-row">
+            <span class="lm-slider-label">G</span>
+            <input class="lm-range lm-range-g" type="range" id="slider-g" min="0" max="255" value="24" />
+            <span class="lm-slider-val" id="val-g">24</span>
+          </div>
+          <div class="lm-slider-row">
+            <span class="lm-slider-label">B</span>
+            <input class="lm-range lm-range-b" type="range" id="slider-b" min="0" max="255" value="93" />
+            <span class="lm-slider-val" id="val-b">93</span>
+          </div>
         </div>
       </div>
 
@@ -1712,6 +1864,12 @@
         matte: 'MATTE',
         match: 'MATCH',
         fontBody: "'Shippori Mincho', serif",
+        tabColor: '🎨 カラーを選ぶ',
+        tabPhoto: '📷 写真から抽出',
+        uploadHint: '画像をタップして選択',
+        pickHint: 'タップして色を抽出',
+        extractedLabel: '抽出した色',
+        useColorBtn: 'この色で検索',
       },
       ko: {
         title: 'LipMatch - 이상적인 색을 찾아보세요',
@@ -1725,6 +1883,12 @@
         matte: 'MATTE',
         match: 'MATCH',
         fontBody: "'Noto Serif KR', serif",
+        tabColor: '🎨 컬러 선택',
+        tabPhoto: '📷 사진에서 추출',
+        uploadHint: '이미지를 탭하여 선택',
+        pickHint: '탭하여 색상 추출',
+        extractedLabel: '추출한 색상',
+        useColorBtn: '이 색으로 검색',
       },
       en: {
         title: 'LipMatch - Find Your Perfect Shade',
@@ -1738,6 +1902,12 @@
         matte: 'MATTE',
         match: 'MATCH',
         fontBody: "'Shippori Mincho', serif",
+        tabColor: '🎨 Pick Colour',
+        tabPhoto: '📷 From Photo',
+        uploadHint: 'Tap to select an image',
+        pickHint: 'Tap image to extract colour',
+        extractedLabel: 'Extracted colour',
+        useColorBtn: 'Search with this colour',
       }
     };
 
@@ -1831,6 +2001,127 @@
         });
       });
     }
+
+
+    // ══════════════════════════════════════════
+    // 写真からの色抽出機能
+    // ══════════════════════════════════════════
+
+    // モード切り替え（カラーピッカー ↔ 写真抽出）
+    function switchMode(mode) {
+      const photoArea = document.getElementById('photo-area');
+      const colorArea = document.getElementById('color-area');
+      const tabColor  = document.getElementById('tab-color');
+      const tabPhoto  = document.getElementById('tab-photo');
+      if (mode === 'photo') {
+        photoArea.style.display = 'block';
+        colorArea.style.display = 'none';
+        tabColor.classList.remove('active');
+        tabPhoto.classList.add('active');
+      } else {
+        photoArea.style.display = 'none';
+        colorArea.style.display = 'block';
+        tabColor.classList.add('active');
+        tabPhoto.classList.remove('active');
+      }
+    }
+
+    // DOM参照
+    const photoFileInput   = document.getElementById('photo-file-input');
+    const photoCanvas      = document.getElementById('photo-canvas');
+    const photoCtx         = photoCanvas.getContext('2d');
+    const photoPreviewWrap = document.getElementById('photo-preview-wrap');
+    const extractedPreview = document.getElementById('extracted-preview');
+    const extractedSwatch  = document.getElementById('extracted-swatch');
+    const extractedHexEl   = document.getElementById('extracted-hex');
+    const cursorRing       = document.getElementById('cursor-ring');
+    const uploadZone       = document.getElementById('upload-zone');
+
+    // ファイル選択時の処理
+    photoFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          // キャンバスサイズを画像に合わせてセット
+          const maxW = 460;
+          const scale = Math.min(maxW / img.width, 1);
+          photoCanvas.width  = img.width  * scale;
+          photoCanvas.height = img.height * scale;
+          photoCtx.drawImage(img, 0, 0, photoCanvas.width, photoCanvas.height);
+          photoPreviewWrap.classList.add('visible');
+          uploadZone.style.display = 'none';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // クリック / タップで色抽出（共通処理）
+    function extractColorAt(clientX, clientY) {
+      const rect   = photoCanvas.getBoundingClientRect();
+      const scaleX = photoCanvas.width  / rect.width;
+      const scaleY = photoCanvas.height / rect.height;
+      const cx = (clientX - rect.left) * scaleX;
+      const cy = (clientY - rect.top)  * scaleY;
+
+      // 5x5ピクセル平均で安定した色を取得
+      const r_size = 2;
+      const px = photoCtx.getImageData(
+        Math.max(0, Math.round(cx) - r_size),
+        Math.max(0, Math.round(cy) - r_size),
+        r_size * 2 + 1,
+        r_size * 2 + 1
+      );
+      let r = 0, g = 0, b = 0, cnt = 0;
+      for (let i = 0; i < px.data.length; i += 4) {
+        r += px.data[i]; g += px.data[i+1]; b += px.data[i+2]; cnt++;
+      }
+      r = Math.round(r / cnt);
+      g = Math.round(g / cnt);
+      b = Math.round(b / cnt);
+
+      const hex = rgbToHex(r, g, b);
+
+      // カーソルリングをクリック位置に表示
+      cursorRing.style.left    = (clientX - rect.left) + 'px';
+      cursorRing.style.top     = (clientY - rect.top)  + 'px';
+      cursorRing.style.display = 'block';
+      cursorRing.style.borderColor = '#fff';
+      cursorRing.style.background  = hex + '55';
+
+      // 抽出色プレビューを更新
+      extractedSwatch.style.backgroundColor = hex;
+      extractedHexEl.textContent             = hex;
+      extractedPreview.classList.add('visible');
+    }
+
+    // マウスクリック対応
+    photoCanvas.addEventListener('click', (e) => {
+      extractColorAt(e.clientX, e.clientY);
+    });
+
+    // スマホタッチ対応
+    photoCanvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      extractColorAt(t.clientX, t.clientY);
+    }, { passive: false });
+
+    // 「この色で検索」ボタン
+    document.getElementById('use-color-btn').addEventListener('click', () => {
+      const hex = extractedHexEl.textContent;
+      // カラーピッカーに抽出色を反映
+      colorInput.value = hex.toLowerCase();
+      applyColor(hex);
+      syncSlidersFromHex(hex);
+      // カラーピッカータブへ切り替え
+      switchMode('color');
+      // 自動で検索を実行
+      searchBtn.click();
+    });
   </script>
 
 </body>
