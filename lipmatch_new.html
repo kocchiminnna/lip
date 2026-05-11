@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title">LipMatch - 理想の色を見つけよう</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Noto+Serif+KR:wght@400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2691NYJPGX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-2691NYJPGX');
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      /* スクリーンショットの非常に淡いクリーム色 */
+      background-color: #F3EAE4;
+      background-image: radial-gradient(ellipse at 30% 20%, #FDF5F0 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, #EDE0D8 0%, transparent 50%);
+      color: #4A2C1A;
+      font-family: 'Shippori Mincho', serif;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* ── HEADER ── */
+    .lm-header {
+      text-align: center;
+      padding: 56px 24px 40px;
+    }
+    .lm-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      color: #B8917A;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      font-weight: 300;
+    }
+    .lm-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 62px;
+      font-weight: 600;
+      line-height: 1;
+      color: #3B2010;
+      letter-spacing: -0.01em;
+    }
+    .lm-logo em {
+      font-style: italic;
+      color: #B8744A;
+      font-weight: 400;
+    }
+    .lm-subtitle {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #B8917A;
+      letter-spacing: 0.22em;
+      font-weight: 300;
+    }
+    .lm-divider {
+      width: 36px;
+      height: 1px;
+      background: #C4A088;
+      margin: 22px auto 0;
+    }
+
+    /* ── MAIN CONTAINER ── */
+    .lm-wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── DASHBOARD CARD ── */
+    .lm-card {
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 28px;
+      padding: 36px 32px 32px;
+      /* スクリーンショットの柔らかいシャドウ */
+      box-shadow:
+        0 2px 6px rgba(120, 70, 40, 0.04),
+        0 8px 32px rgba(120, 70, 40, 0.09),
+        0 24px 64px rgba(120, 70, 40, 0.06);
+      margin-bottom: 52px;
+      backdrop-filter: blur(12px);
+    }
+    .lm-card-label {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: #B8744A;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lm-card-label::before {
+      content: '◆';
+      font-size: 7px;
+      color: #D4A882;
+    }
+
+    /* ── カラーピッカー エリア ── */
+    .lm-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    /* 破線リング＋カラーサークル */
+    .lm-ring-wrap {
+      position: relative;
+      flex-shrink: 0;
+      /* 外側の破線リング分を含めた全体サイズ */
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+    }
+    /* 破線の外リング */
+    .lm-ring-dashed {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px dashed #C8A48A;
+      /* 破線の内側に白い余白を作る */
+      background: transparent;
+      pointer-events: none;
+    }
+    /* 白い余白レイヤー（破線とカラー円の間） */
+    .lm-ring-gap {
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.7);
+      pointer-events: none;
+    }
+    /* カラー表示円 */
+    #color-preview {
+      position: absolute;
+      inset: 11px;
+      border-radius: 50%;
+      background-color: #BE185D;
+      box-shadow:
+        0 2px 8px rgba(120, 60, 30, 0.20),
+        0 6px 20px rgba(120, 60, 30, 0.15);
+      transition: background-color 0.25s ease;
+    }
+    /* 不可視のカラーピッカー input（リング全体をタップ可能に） */
+    #color-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 10;
+    }
+
+    /* hex表示 ＋ ヒント */
+    .lm-hex-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #hex-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 34px;
+      font-weight: 600;
+      color: #3B2010;
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+    .lm-tap-hint {
+      font-size: 11px;
+      color: #C0A090;
+      letter-spacing: 0.06em;
+      font-weight: 300;
+    }
+
+    /* ── RGB スライダー ── */
+    .lm-sliders { margin-bottom: 32px; }
+    .lm-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .lm-slider-row:last-child { margin-bottom: 0; }
+    .lm-slider-label {
+      font-size: 11px;
+      color: #C0A090;
+      width: 10px;
+      flex-shrink: 0;
+      font-weight: 400;
+    }
+    .lm-range {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+      /* 初期値はJSで上書き */
+    }
+    /* サムネイル（つまみ）*/
+    .lm-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #C8A48A;
+      box-shadow: 0 1px 5px rgba(100, 50, 20, 0.18);
+      transition: border-color 0.15s;
+    }
+    .lm-range::-webkit-slider-thumb:hover {
+      border-color: #A06840;
+    }
+    .lm-range::-moz-range-thumb {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #C8A48A;
+      box-shadow: 0 1px 5px rgba(100, 50, 20, 0.18);
+    }
+    .lm-slider-val {
+      font-size: 11px;
+      color: #C0A090;
+      width: 28px;
+      text-align: right;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── 検索ボタン ── */
+    #search-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(90deg, #8B4F2E 0%, #C08050 50%, #A06438 100%);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      font-family: 'Shippori Mincho', serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      box-shadow: 0 4px 20px rgba(120, 60, 20, 0.25);
+    }
+    #search-btn:hover  { opacity: 0.88; }
+    #search-btn:active { transform: scale(0.985); }
+
+    /* ── RESULTS ── */
+    #results-container { display: none; }
+    #results-container.visible { display: block; }
+
+    .lm-results-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 600;
+      text-align: center;
+      color: #3B2010;
+      letter-spacing: 0.14em;
+      margin-bottom: 20px;
+    }
+    .lm-results-rule {
+      display: flex;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    .lm-results-rule::before,
+    .lm-results-rule::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #D8C4B4;
+    }
+    .lm-results-rule span {
+      color: #C4A088;
+      font-size: 8px;
+      padding: 0 12px;
+    }
+
+    #results-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .result-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow:
+        0 2px 8px rgba(120, 70, 40, 0.06),
+        0 8px 24px rgba(120, 70, 40, 0.07);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.45s ease forwards;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .result-swatch-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .result-swatch {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      border: 4px solid white;
+      box-shadow:
+        0 2px 8px rgba(120, 60, 30, 0.15),
+        0 6px 20px rgba(120, 60, 30, 0.12);
+    }
+    .result-badge {
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #8B5538;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    .result-info { flex: 1; min-width: 0; }
+    .result-brand {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      color: #B8744A;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .result-name {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #3B2010;
+      line-height: 1.5;
+      margin-bottom: 9px;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+
+    .matte-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #8B5538 0%, #A06438 100%);
+      color: #FFF;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+      line-height: 1.6;
+    }
+    .result-hex-chip {
+      display: inline-block;
+      background: #F0E6DE;
+      color: #9B7455;
+      font-size: 10px;
+      font-family: 'Courier New', monospace;
+      padding: 3px 10px;
+      border-radius: 99px;
+      letter-spacing: 0.05em;
+    }
+    .result-right {
+      flex-shrink: 0;
+      text-align: right;
+      min-width: 64px;
+    }
+    .result-pct {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      font-weight: 600;
+      color: #3B2010;
+      line-height: 1;
+    }
+    .result-pct sup {
+      font-size: 15px;
+      vertical-align: super;
+    }
+    .result-match-label {
+      font-size: 8px;
+      letter-spacing: 0.25em;
+      color: #C0A090;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+    .result-bar {
+      width: 56px;
+      height: 3px;
+      background: #EAD8CC;
+      border-radius: 2px;
+      margin-top: 10px;
+      margin-left: auto;
+      overflow: hidden;
+    }
+    .result-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8B4F2E, #C08050);
+      border-radius: 2px;
+    }
+    .result-shops {
+      display: flex;
+      gap: 6px;
+      margin-top: 9px;
+    }
+    .shop-btn {
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 99px;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .shop-btn:hover { opacity: 0.78; }
+    .shop-btn-qoo { background: #FBF0E8; color: #9B5C3A; border: 1px solid #E8C4AC; }
+    .shop-btn-amz { background: #FEF8EC; color: #A07820; border: 1px solid #ECD898; }
+
+    /* ── footer ── */
+    .lm-notice {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 0 24px 32px;
+      text-align: center;
+      font-size: 11px;
+      color: #B8A090;
+      line-height: 1.8;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── LANGUAGE SWITCHER ── */
+    .lang-switcher {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 4px;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 10px;
+      padding: 4px;
+      box-shadow: 0 2px 12px rgba(120,60,20,0.12);
+    }
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: #B8917A;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 6px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Shippori Mincho', serif;
+    }
+    .lang-btn:hover { background: rgba(139,79,46,0.08); }
+    .lang-btn.active {
+      background: #8B5538;
+      color: #FFF;
+    }
+    .lm-footer {
+      text-align: center;
+      padding: 24px 0 20px;
+      font-size: 11px;
+      color: #C4A088;
+      letter-spacing: 0.06em;
+      line-height: 1.8;
+    }
+    .lm-footer a {
+      color: #B8744A;
+      text-decoration: none;
+    }
+    .lm-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── モード切り替えタブ ── */
+    .lm-mode-tabs {
+      display: flex;
+      background: #F0E6DE;
+      border-radius: 12px;
+      padding: 3px;
+      margin-bottom: 24px;
+      gap: 3px;
+    }
+    .lm-mode-tab {
+      flex: 1;
+      padding: 9px 6px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 11px;
+      font-family: 'Shippori Mincho', serif;
+      color: #B8917A;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+    }
+    .lm-mode-tab.active {
+      background: white;
+      color: #3B2010;
+      box-shadow: 0 1px 4px rgba(120,60,20,0.12);
+    }
+
+    /* ── 写真アップロードエリア ── */
+    .lm-photo-area { display: none; }
+    .lm-upload-zone {
+      border: 2px dashed #C8A48A;
+      border-radius: 18px;
+      padding: 30px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 16px;
+      background: rgba(255,255,255,0.5);
+    }
+    .lm-upload-zone:hover { border-color: #A06840; background: rgba(255,255,255,0.8); }
+    .lm-upload-zone-icon { font-size: 30px; margin-bottom: 8px; }
+    .lm-upload-zone-text { font-size: 11px; color: #B8917A; letter-spacing: 0.08em; }
+
+    .lm-photo-preview-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      display: none;
+      cursor: crosshair;
+      box-shadow: 0 4px 20px rgba(120,60,20,0.15);
+    }
+    .lm-photo-preview-wrap.visible { display: block; }
+    #photo-canvas { width: 100%; display: block; }
+    .lm-pick-hint {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(59,32,16,0.72));
+      color: white;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      padding: 20px 16px 10px;
+      text-align: center;
+    }
+    .lm-cursor-ring {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2.5px solid white;
+      box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      display: none;
+      transition: left 0.05s, top 0.05s;
+    }
+    .lm-extracted-preview {
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .lm-extracted-preview.visible { display: flex; }
+    .lm-extracted-swatch {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(120,60,20,0.2);
+      flex-shrink: 0;
+    }
+    .lm-extracted-info { flex: 1; }
+    .lm-extracted-hex {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #3B2010;
+    }
+    .lm-extracted-label { font-size: 10px; color: #B8917A; letter-spacing: 0.1em; }
+    .lm-use-color-btn {
+      font-size: 10px;
+      font-family: 'Shippori Mincho', serif;
+      padding: 8px 14px;
+      background: linear-gradient(90deg, #8B4F2E 0%, #C08050 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .lm-use-color-btn:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+  <!-- ── LANGUAGE SWITCHER ── -->
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="switchLang('ja')">JP</button>
+    <button class="lang-btn" onclick="switchLang('ko')">KR</button>
+    <button class="lang-btn" onclick="switchLang('en')">EN</button>
+  </div>
+
+  <!-- ── HEADER ── -->
+  <header class="lm-header">
+    <p class="lm-eyebrow">Colour Matching</p>
+    <h1 class="lm-logo">Lip<em>Match</em></h1>
+    <p class="lm-subtitle" data-i18n="subtitle">理想の色を、あなたの唇へ。</p>
+    <div class="lm-divider"></div>
+  </header>
+
+  <div class="lm-wrap">
+
+    <!-- ── DASHBOARD CARD ── -->
+    <div class="lm-card">
+      <div class="lm-card-label" data-i18n="cardLabel">あなたの理想のリップカラー</div>
+
+      <!-- ── モード切り替えタブ ── -->
+      <div class="lm-mode-tabs">
+        <button class="lm-mode-tab active" id="tab-color" onclick="switchMode('color')" data-i18n="tabColor">🎨 カラーを選ぶ</button>
+        <button class="lm-mode-tab" id="tab-photo" onclick="switchMode('photo')" data-i18n="tabPhoto">📷 写真から抽出</button>
+      </div>
+
+      <!-- ── 写真アップロードエリア ── -->
+      <div class="lm-photo-area" id="photo-area">
+        <div class="lm-upload-zone" id="upload-zone" onclick="document.getElementById('photo-file-input').click()">
+          <div class="lm-upload-zone-icon">📷</div>
+          <div class="lm-upload-zone-text" data-i18n="uploadHint">画像をタップして選択</div>
+        </div>
+        <input type="file" id="photo-file-input" accept="image/*" style="display:none" />
+        <!-- 画像プレビュー＆色抽出キャンバス -->
+        <div class="lm-photo-preview-wrap" id="photo-preview-wrap">
+          <canvas id="photo-canvas"></canvas>
+          <div class="lm-cursor-ring" id="cursor-ring"></div>
+          <div class="lm-pick-hint" data-i18n="pickHint">タップして色を抽出</div>
+        </div>
+        <!-- 抽出した色プレビュー -->
+        <div class="lm-extracted-preview" id="extracted-preview">
+          <div class="lm-extracted-swatch" id="extracted-swatch"></div>
+          <div class="lm-extracted-info">
+            <div class="lm-extracted-hex" id="extracted-hex">#BE185D</div>
+            <div class="lm-extracted-label" data-i18n="extractedLabel">抽出した色</div>
+          </div>
+          <button class="lm-use-color-btn" id="use-color-btn" data-i18n="useColorBtn">この色で検索</button>
+        </div>
+      </div>
+
+      <!-- ── カラーピッカーエリア ── -->
+      <div class="lm-color-area" id="color-area">
+        <!-- Color ring + hex display -->
+        <div class="lm-picker-row">
+          <div class="lm-ring-wrap">
+            <!-- 破線の外リング -->
+            <div class="lm-ring-dashed"></div>
+            <!-- 破線とカラー円の間の白い余白 -->
+            <div class="lm-ring-gap"></div>
+            <!-- カラー表示円 -->
+            <div id="color-preview"></div>
+            <!-- 透明なカラーピッカー（全体タップ可能） -->
+            <input type="color" id="color-input" value="#BE185D" />
+          </div>
+          <div class="lm-hex-info">
+            <span id="hex-label">#BE185D</span>
+            <span class="lm-tap-hint" data-i18n="tapHint">丸をタップして色を選択</span>
+          </div>
+        </div>
+        <!-- RGB sliders (display only, synced to color-input) -->
+        <div class="lm-sliders">
+          <div class="lm-slider-row">
+            <span class="lm-slider-label">R</span>
+            <input class="lm-range lm-range-r" type="range" id="slider-r" min="0" max="255" value="190" />
+            <span class="lm-slider-val" id="val-r">190</span>
+          </div>
+          <div class="lm-slider-row">
+            <span class="lm-slider-label">G</span>
+            <input class="lm-range lm-range-g" type="range" id="slider-g" min="0" max="255" value="24" />
+            <span class="lm-slider-val" id="val-g">24</span>
+          </div>
+          <div class="lm-slider-row">
+            <span class="lm-slider-label">B</span>
+            <input class="lm-range lm-range-b" type="range" id="slider-b" min="0" max="255" value="93" />
+            <span class="lm-slider-val" id="val-b">93</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search button (same id as original) -->
+      <button id="search-btn" data-i18n="searchBtn">似ているリップを探す &nbsp;→</button>
+    </div>
+
+    <!-- ── RESULTS ── -->
+    <section id="results-container">
+      <h2 class="lm-results-heading" data-i18n="resultsHeading">あなたへのおすすめ</h2>
+      <div class="lm-results-rule"><span>◆</span></div>
+      <div id="results-list"></div>
+    </section>
+
+  </div>
+
+  <div class="lm-notice">
+    <span data-i18n="disclaimer">※ 表示される色はお使いのデバイスの画面設定や光の加減により実際の色と異なる場合があります。また、唇の元の色や質感によっても仕上がりは個人差があります。</span>
+  </div>
+
+  <footer class="lm-footer">
+    <span data-i18n="admin">管理者</span>：<a href="https://x.com/gn0yCrbha65833" target="_blank" rel="noopener">@gn0yCrbha65833</a><br>
+    © 2025 LipMatch
+  </footer>
+
+  <!-- ════════════════════════════════
+       SCRIPTS — ロジックはそのまま
+  ════════════════════════════════ -->
+  <script data-purpose="mock-database">
+    const LIPSTICK_DB = [
+      { id: 1, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 01", color: "#FC6A58", matte: false },
+      { id: 2, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 02", color: "#FE726C", matte: false },
+      { id: 3, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 03", color: "#FE7288", matte: false },
+      { id: 4, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 04", color: "#BC4F58", matte: false },
+      { id: 5, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 05", color: "#CD4D48", matte: false },
+      { id: 6, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 06", color: "#E5384E", matte: false },
+      { id: 7, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 07", color: "#E5625C", matte: false },
+      { id: 8, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 08", color: "#D25766", matte: false },
+      { id: 9, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 09", color: "#C45C73", matte: false },
+      { id: 10, brand: "milktouch", name: "ジェリーフィットティンティッドグロウティント 10", color: "#C16B5F", matte: false },
+      { id: 11, brand: "milktouch", name: "#花雨グロス デューステインシアーリップグロス 01", color: "#C66765", matte: false },
+      { id: 12, brand: "milktouch", name: "#花雨グロス デューステインシアーリップグロス 02", color: "#CA6174", matte: false },
+      { id: 13, brand: "milktouch", name: "#花雨グロス デューステインシアーリップグロス 03", color: "#D5606F", matte: false },
+      { id: 14, brand: "milktouch", name: "#花雨グロス デューステインシアーリップグロス 04", color: "#D35162", matte: false },
+      { id: 15, brand: "milktouch", name: "#花雨グロス デューステインシアーリップグロス 05", color: "#CF524D", matte: false },
+      { id: 16, brand: "milktouch", name: "#花雨グロス デューステインシアーリップグロス 06", color: "#C6555B", matte: false },
+      { id: 17, brand: "milktouch", name: "#花雨グロス デューステインシアーリップグロス 07", color: "#B8434F", matte: false },
+      { id: 18, brand: "rom&nd", name: "グラスティングカラーグロス 01", color: "#DCA9B2", matte: false },
+      { id: 19, brand: "rom&nd", name: "グラスティングカラーグロス 02", color: "#CB9380", matte: false },
+      { id: 20, brand: "rom&nd", name: "グラスティングカラーグロス 03", color: "#B48084", matte: false },
+      { id: 21, brand: "rom&nd", name: "グラスティングカラーグロス 04", color: "#BD818D", matte: false },
+      { id: 22, brand: "rom&nd", name: "グラスティングカラーグロス 05", color: "#A1797A", matte: false },
+      { id: 23, brand: "rom&nd", name: "グラスティングカラーグロス 06", color: "#A36F6A", matte: false },
+      { id: 24, brand: "rom&nd", name: "グラスティングカラーグロス 07", color: "#E74848", matte: false },
+      { id: 25, brand: "rom&nd", name: "グラスティングカラーグロス 08", color: "#B82341", matte: false },
+      { id: 26, brand: "rom&nd", name: "グラスティングカラーグロス S01", color: "#FF9E93", matte: false },
+      { id: 27, brand: "rom&nd", name: "グラスティングカラーグロス S03", color: "#E96D4F", matte: false },
+      { id: 28, brand: "rom&nd", name: "グラスティングカラーグロス S04", color: "#FF8E9A", matte: false },
+      { id: 29, brand: "rom&nd", name: "グラスティングカラーグロス S05", color: "#F46078", matte: false },
+      { id: 30, brand: "rom&nd", name: "グラスティングカラーグロス S08", color: "#FFA676", matte: false },
+      { id: 31, brand: "rom&nd", name: "グラスティングカラーグロス S09", color: "#D1604D", matte: false },
+      { id: 32, brand: "rom&nd", name: "グラスティングメルティングバーム 01", color: "#D98E73", matte: false },
+      { id: 33, brand: "rom&nd", name: "グラスティングメルティングバーム 02", color: "#DF586C", matte: false },
+      { id: 34, brand: "rom&nd", name: "グラスティングメルティングバーム 03", color: "#E19681", matte: false },
+      { id: 35, brand: "rom&nd", name: "グラスティングメルティングバーム 04", color: "#A7343D", matte: false },
+      { id: 36, brand: "rom&nd", name: "グラスティングメルティングバーム 05", color: "#A15E50", matte: false },
+      { id: 37, brand: "rom&nd", name: "グラスティングメルティングバーム 06", color: "#A15C57", matte: false },
+      { id: 38, brand: "rom&nd", name: "グラスティングメルティングバーム 07", color: "#9B4C55", matte: false },
+      { id: 39, brand: "rom&nd", name: "グラスティングメルティングバーム 08", color: "#ED8666", matte: false },
+      { id: 40, brand: "rom&nd", name: "グラスティングメルティングバーム 09", color: "#EC88A4", matte: false },
+      { id: 41, brand: "rom&nd", name: "グラスティングメルティングバーム 10", color: "#BC8869", matte: false },
+      { id: 42, brand: "rom&nd", name: "グラスティングメルティングバーム 11", color: "#C58C7A", matte: false },
+      { id: 43, brand: "rom&nd", name: "グラスティングメルティングバーム 12", color: "#B06E74", matte: false },
+      { id: 44, brand: "rom&nd", name: "グラスティングメルティングバーム 13", color: "#A2655A", matte: false },
+      { id: 45, brand: "rom&nd", name: "グラスティングメルティングバーム 14", color: "#C1676A", matte: false },
+      { id: 46, brand: "rom&nd", name: "グラスティングメルティングバーム 15", color: "#9C413F", matte: false },
+      { id: 47, brand: "rom&nd", name: "ザジューシーラスティングティント 01", color: "#C2795D", matte: false },
+      { id: 48, brand: "rom&nd", name: "ザジューシーラスティングティント 02", color: "#A45146", matte: false },
+      { id: 49, brand: "rom&nd", name: "ザジューシーラスティングティント 03", color: "#B0636B", matte: false },
+      { id: 50, brand: "rom&nd", name: "ザジューシーラスティングティント 04", color: "#903347", matte: false },
+      { id: 51, brand: "rom&nd", name: "ザジューシーラスティングティント 05", color: "#BC4F4D", matte: false },
+      { id: 52, brand: "rom&nd", name: "ザジューシーラスティングティント 06", color: "#BC4F4D", matte: false },
+      { id: 53, brand: "rom&nd", name: "ザジューシーラスティングティント 08", color: "#A74447", matte: false },
+      { id: 54, brand: "rom&nd", name: "ザジューシーラスティングティント 09", color: "#C44B45", matte: false },
+      { id: 55, brand: "rom&nd", name: "ザジューシーラスティングティント 11", color: "#D6674F", matte: false },
+      { id: 56, brand: "rom&nd", name: "ザジューシーラスティングティント 12", color: "#CF623C", matte: false },
+      { id: 57, brand: "rom&nd", name: "ザジューシーラスティングティント 13", color: "#852913", matte: false },
+      { id: 58, brand: "rom&nd", name: "ザジューシーラスティングティント 14", color: "#8F4F3F", matte: false },
+      { id: 59, brand: "rom&nd", name: "ザジューシーラスティングティント 15", color: "#9C4657", matte: false },
+      { id: 60, brand: "rom&nd", name: "ザジューシーラスティングティント 16", color: "#6C1814", matte: false },
+      { id: 61, brand: "rom&nd", name: "ザジューシーラスティングティント 17", color: "#7B3525", matte: false },
+      { id: 62, brand: "rom&nd", name: "ザジューシーラスティングティント 18", color: "#672F35", matte: false },
+      { id: 63, brand: "rom&nd", name: "ザジューシーラスティングティント 20", color: "#B04C58", matte: false },
+      { id: 64, brand: "rom&nd", name: "ザジューシーラスティングティント 21", color: "#AE2850", matte: false },
+      { id: 65, brand: "rom&nd", name: "ザジューシーラスティングティント 22", color: "#832620", matte: false },
+      { id: 66, brand: "rom&nd", name: "ザジューシーラスティングティント 23", color: "#ED949E", matte: false },
+      { id: 67, brand: "rom&nd", name: "ザジューシーラスティングティント 24", color: "#DC7766", matte: false },
+      { id: 68, brand: "rom&nd", name: "ザジューシーラスティングティント 25", color: "#352A29", matte: false },
+      { id: 69, brand: "rom&nd", name: "ザジューシーラスティングティント 26", color: "#EC6768", matte: false },
+      { id: 70, brand: "rom&nd", name: "ザジューシーラスティングティント 27", color: "#F1A497", matte: false },
+      { id: 71, brand: "rom&nd", name: "ザジューシーラスティングティント 28", color: "#F0A6B7", matte: false },
+      { id: 72, brand: "rom&nd", name: "ザジューシーラスティングティント 29", color: "#E78A7D", matte: false },
+      { id: 73, brand: "rom&nd", name: "ザジューシーラスティングティント 30", color: "#DC765E", matte: false },
+      { id: 74, brand: "CLIO", name: "クリスタルグラムティント 03", color: "#FE6189", matte: false },
+      { id: 75, brand: "CLIO", name: "クリスタルグラムティント 18", color: "#DA5366", matte: false },
+      { id: 76, brand: "CLIO", name: "クリスタルグラムティント 101", color: "#F36A8A", matte: false },
+      { id: 77, brand: "CLIO", name: "クリスタルグラムティント 103", color: "#E6456F", matte: false },
+      { id: 78, brand: "CLIO", name: "クリスタルグラムティント 06", color: "#DF6074", matte: false },
+      { id: 79, brand: "CLIO", name: "クリスタルグラムティント 26", color: "#A9405E", matte: false },
+      { id: 80, brand: "CLIO", name: "クリスタルグラムティント 04", color: "#E36E89", matte: false },
+      { id: 81, brand: "CLIO", name: "クリスタルグラムティント 01", color: "#CC464B", matte: false },
+      { id: 82, brand: "CLIO", name: "クリスタルグラムティント 28", color: "#BC394F", matte: false },
+      { id: 83, brand: "CLIO", name: "クリスタルグラムティント 08", color: "#C14441", matte: false },
+      { id: 84, brand: "CLIO", name: "クリスタルグラムティント 19", color: "#E86568", matte: false },
+      { id: 85, brand: "CLIO", name: "クリスタルグラムティント 100", color: "#FD927E", matte: false },
+      { id: 86, brand: "CLIO", name: "クリスタルグラムティント 102", color: "#F66558", matte: false },
+      { id: 87, brand: "CLIO", name: "クリスタルグラムティント 27", color: "#E95B6F", matte: false },
+      { id: 88, brand: "CLIO", name: "クリスタルグラムティント 11", color: "#EC7064", matte: false },
+      { id: 89, brand: "CLIO", name: "クリスタルグラムティント 20", color: "#D5715B", matte: false },
+      { id: 90, brand: "CLIO", name: "クリスタルグラムティント 07", color: "#DB8769", matte: false },
+      { id: 91, brand: "CLIO", name: "グレーズ リップ セラム 01", color: "#DA5965", matte: false },
+      { id: 92, brand: "CLIO", name: "グレーズ リップ セラム 02", color: "#E04F56", matte: false },
+      { id: 93, brand: "CLIO", name: "グレーズ リップ セラム 03", color: "#E45F4F", matte: false },
+      { id: 94, brand: "CLIO", name: "グレーズ リップ セラム 04", color: "#BC4D66", matte: false },
+      { id: 95, brand: "CANMAKE", name: "グラスティントシロップ 01", color: "#D77278", matte: false },
+      { id: 96, brand: "CANMAKE", name: "グラスティントシロップ 02", color: "#D07772", matte: false },
+      { id: 97, brand: "CANMAKE", name: "グラスティントシロップ 03", color: "#B46054", matte: false },
+      { id: 98, brand: "CANMAKE", name: "グラスティントシロップ 04", color: "#E88999", matte: false },
+      { id: 99, brand: "CANMAKE", name: "グラスティントシロップ 05", color: "#EE7379", matte: false },
+      { id: 100, brand: "CANMAKE", name: "グラスティントシロップ 40th", color: "#D55E6D", matte: false },
+      { id: 101, brand: "CANMAKE", name: "むちぷるティント 01", color: "#A44A04", matte: false },
+      { id: 102, brand: "CANMAKE", name: "むちぷるティント 02", color: "#CE6564", matte: false },
+      { id: 103, brand: "CANMAKE", name: "むちぷるティント 03", color: "#A61442", matte: false },
+      { id: 104, brand: "CANMAKE", name: "むちぷるティント 04", color: "#AE2A27", matte: false },
+      { id: 105, brand: "CANMAKE", name: "むちぷるティント 05", color: "#DE6D91", matte: false },
+      { id: 106, brand: "CANMAKE", name: "むちぷるティント 06", color: "#EC8071", matte: false },
+      { id: 107, brand: "CANMAKE", name: "むちぷるティント 40th", color: "#BE6571", matte: false },
+      { id: 108, brand: "CANMAKE", name: "ステイオンバームルージュ 02", color: "#FF8278", matte: false },
+      { id: 109, brand: "CANMAKE", name: "ステイオンバームルージュ 03", color: "#E85857", matte: false },
+      { id: 110, brand: "CANMAKE", name: "ステイオンバームルージュ 09", color: "#A94E4E", matte: false },
+      { id: 111, brand: "CANMAKE", name: "ステイオンバームルージュ 16", color: "#9D6258", matte: false },
+      { id: 112, brand: "CANMAKE", name: "ステイオンバームルージュ 20", color: "#E08179", matte: false },
+      { id: 113, brand: "CEZANNE", name: "ウォータリーティントリップ 01", color: "#C9474A", matte: false },
+      { id: 114, brand: "CEZANNE", name: "ウォータリーティントリップ 02", color: "#920510", matte: false },
+      { id: 115, brand: "CEZANNE", name: "ウォータリーティントリップ 03", color: "#A7492D", matte: false },
+      { id: 116, brand: "CEZANNE", name: "ウォータリーティントリップ 05", color: "#AF2C3A", matte: false },
+      { id: 117, brand: "CEZANNE", name: "ウォータリーティントリップ 06", color: "#C77366", matte: false },
+      { id: 118, brand: "CEZANNE", name: "ウォータリーティントリップ 07", color: "#823637", matte: false },
+      { id: 119, brand: "CEZANNE", name: "ウォータリーティントリップ 09", color: "#CC979D", matte: false },
+      { id: 120, brand: "CEZANNE", name: "ウォータリーティントリップ P1", color: "#EC7561", matte: false },
+      { id: 121, brand: "CEZANNE", name: "3Dジェリーリップ 01", color: "#EC6D7B", matte: false },
+      { id: 122, brand: "CEZANNE", name: "3Dジェリーリップ 02", color: "#D86C87", matte: false },
+      { id: 123, brand: "CEZANNE", name: "リップカラーシールド 01", color: "#C16850", matte: false },
+      { id: 124, brand: "CEZANNE", name: "リップカラーシールド 02", color: "#CD6F36", matte: false },
+      { id: 125, brand: "CEZANNE", name: "リップカラーシールド 03", color: "#71413D", matte: false },
+      { id: 126, brand: "CEZANNE", name: "リップカラーシールド 04", color: "#CF7278", matte: false },
+      { id: 127, brand: "CEZANNE", name: "リップカラーシールド 05", color: "#8B5964", matte: false },
+      { id: 128, brand: "CEZANNE", name: "リップカラーシールド 06", color: "#AB564E", matte: false },
+      { id: 129, brand: "CEZANNE", name: "リップカラーシールド 07", color: "#C75150", matte: false },
+      { id: 130, brand: "CEZANNE", name: "リップカラーシールド 08", color: "#DB022A", matte: false },
+      { id: 131, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 40", color: "#E36A6F", matte: false },
+      { id: 132, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 43", color: "#D7425E", matte: false },
+      { id: 133, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 47", color: "#B9141A", matte: false },
+      { id: 134, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 48", color: "#B54C5B", matte: false },
+      { id: 135, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 49", color: "#AF1F28", matte: false },
+      { id: 136, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 54", color: "#F03C50", matte: false },
+      { id: 137, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 57", color: "#EC8C87", matte: false },
+      { id: 138, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 69", color: "#D26F69", matte: false },
+      { id: 139, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 112", color: "#AB515A", matte: false },
+      { id: 140, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 154", color: "#C16357", matte: false },
+      { id: 141, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 174", color: "#E26B6D", matte: false },
+      { id: 142, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 176", color: "#B1191B", matte: false },
+      { id: 143, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 182", color: "#9A3F36", matte: false },
+      { id: 144, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 188", color: "#CC6560", matte: false },
+      { id: 145, brand: "CHANEL", name: "ル　ルージュデュオ　ウルトラ　トゥニュ 196", color: "#923021", matte: false },
+      { id: 146, brand: "DIOR", name: "アディクトリップマキシマイザー 01", color: "#F2B8B9", matte: false },
+      { id: 147, brand: "DIOR", name: "アディクトリップマキシマイザー 10", color: "#E67088", matte: false },
+      { id: 148, brand: "DIOR", name: "アディクトリップマキシマイザー 03", color: "#D2A7C6", matte: false },
+      { id: 149, brand: "DIOR", name: "アディクトリップマキシマイザー 42", color: "#DE976C", matte: false },
+      { id: 150, brand: "DIOR", name: "アディクトリップマキシマイザー 04", color: "#EE8975", matte: false },
+      { id: 151, brand: "DIOR", name: "アディクトリップマキシマイザー 43", color: "#D38678", matte: false },
+      { id: 152, brand: "DIOR", name: "アディクトリップマキシマイザー 12", color: "#AC635D", matte: false },
+      { id: 153, brand: "DIOR", name: "アディクトリップマキシマイザー 38", color: "#AE5A5E", matte: false },
+      { id: 154, brand: "DIOR", name: "アディクトリップマキシマイザー 21", color: "#C35C32", matte: false },
+      { id: 155, brand: "DIOR", name: "アディクトリップマキシマイザー 19", color: "#D84A4C", matte: false },
+      { id: 156, brand: "DIOR", name: "アディクトリップマキシマイザー 27", color: "#C35C73", matte: false },
+      { id: 157, brand: "DIOR", name: "アディクトリップマキシマイザー 05", color: "#E46388", matte: false },
+      { id: 158, brand: "DIOR", name: "アディクトリップマキシマイザー 07", color: "#D9467F", matte: false },
+      { id: 159, brand: "DIOR", name: "アディクトリップマキシマイザー 06", color: "#C35D98", matte: false },
+      { id: 160, brand: "DIOR", name: "アディクトリップマキシマイザー 24", color: "#BF3D3E", matte: false },
+      { id: 161, brand: "DIOR", name: "アディクトリップマキシマイザー 22", color: "#BF3F3F", matte: false },
+      { id: 162, brand: "DIOR", name: "アディクトリップマキシマイザー 29", color: "#B24453", matte: false },
+      { id: 163, brand: "DIOR", name: "アディクトリップマキシマイザー 23", color: "#B13966", matte: false },
+      { id: 164, brand: "DIOR", name: "アディクトリップマキシマイザー 18", color: "#A55547", matte: false },
+      { id: 165, brand: "DIOR", name: "アディクトリップマキシマイザー 39", color: "#C45245", matte: false },
+      { id: 166, brand: "DIOR", name: "アディクトリップマキシマイザー 14", color: "#B46276", matte: false },
+      { id: 167, brand: "DIOR", name: "アディクトリップマキシマイザー 44", color: "#D2A07C", matte: false },
+      { id: 168, brand: "DIOR", name: "アディクトリップマキシマイザー 09", color: "#E19CAF", matte: false },
+      { id: 169, brand: "DIOR", name: "アディクトリップマキシマイザー 26", color: "#E1A0B0", matte: false },
+      { id: 170, brand: "DIOR", name: "アディクトリップマキシマイザー 28", color: "#E67472", matte: false },
+      { id: 171, brand: "DIOR", name: "アディクトリップマキシマイザー 40", color: "#DA5A85", matte: false },
+      { id: 172, brand: "DIOR", name: "アディクトリップマキシマイザー 20", color: "#A7404D", matte: false },
+      { id: 173, brand: "DIOR", name: "アディクト リップ グロウ 00", color: "#F8EAE7", matte: false },
+      { id: 174, brand: "DIOR", name: "アディクト リップ グロウ 01", color: "#FD9CAB", matte: false },
+      { id: 175, brand: "DIOR", name: "アディクト リップ グロウ 63", color: "#DB9FC4", matte: false },
+      { id: 176, brand: "DIOR", name: "アディクト リップ グロウ 04", color: "#FE7247", matte: false },
+      { id: 177, brand: "DIOR", name: "アディクト リップ グロウ 12", color: "#ED767B", matte: false },
+      { id: 178, brand: "DIOR", name: "アディクト リップ グロウ 75", color: "#D66E66", matte: false },
+      { id: 179, brand: "DIOR", name: "アディクト リップ グロウ 77", color: "#ED5259", matte: false },
+      { id: 180, brand: "DIOR", name: "アディクト リップ グロウ 15", color: "#F73C3A", matte: false },
+      { id: 181, brand: "DIOR", name: "アディクト リップ グロウ 74", color: "#FC4379", matte: false },
+      { id: 182, brand: "DIOR", name: "アディクト リップ グロウ 07", color: "#DF3650", matte: false },
+      { id: 183, brand: "DIOR", name: "アディクト リップ グロウ 31", color: "#DA2428", matte: false },
+      { id: 184, brand: "DIOR", name: "アディクト リップ グロウ 20", color: "#521B1A", matte: false },
+      { id: 185, brand: "DIOR", name: "アディクト リップ グロウ 08", color: "#FE83AA", matte: false },
+      { id: 186, brand: "DIOR", name: "アディクト リップ グロウ 86", color: "#C3DED5", matte: false },
+      { id: 187, brand: "DIOR", name: "アディクト リップ グロウ 212", color: "#FBA4A5", matte: false },
+      { id: 188, brand: "LAKA", name: "デビルリップ 801", color: "#A56549", matte: false },
+      { id: 189, brand: "LAKA", name: "デビルリップ 802", color: "#A9523F", matte: false },
+      { id: 190, brand: "LAKA", name: "デビルリップ 803", color: "#B14459", matte: false },
+      { id: 191, brand: "LAKA", name: "デビルリップ 804", color: "#90443D", matte: false },
+      { id: 192, brand: "LAKA", name: "デビルリップ 805", color: "#894A40", matte: false },
+      { id: 193, brand: "LAKA", name: "デビルリップ 806", color: "#77322B", matte: false },
+      { id: 194, brand: "LAKA", name: "デビルリップ 807", color: "#89302B", matte: false },
+      { id: 195, brand: "LAKA", name: "デビルリップ 808", color: "#8C454F", matte: false },
+      { id: 196, brand: "LAKA", name: "デビルリップ 809", color: "#77302D", matte: false },
+      { id: 197, brand: "LAKA", name: "デビルリップ 810", color: "#6B242A", matte: false },
+      { id: 198, brand: "LAKA", name: "フルーティグラムティント 101", color: "#D25D5B", matte: false },
+      { id: 199, brand: "LAKA", name: "フルーティグラムティント 102", color: "#9A4355", matte: false },
+      { id: 200, brand: "LAKA", name: "フルーティグラムティント 103", color: "#BE5862", matte: false },
+      { id: 201, brand: "LAKA", name: "フルーティグラムティント 104", color: "#801418", matte: false },
+      { id: 202, brand: "LAKA", name: "フルーティグラムティント 105", color: "#D74C85", matte: false },
+      { id: 203, brand: "LAKA", name: "フルーティグラムティント 106", color: "#C9295D", matte: false },
+      { id: 204, brand: "LAKA", name: "フルーティグラムティント 107", color: "#BD6B5B", matte: false },
+      { id: 205, brand: "LAKA", name: "フルーティグラムティント 108", color: "#99453B", matte: false },
+      { id: 206, brand: "LAKA", name: "フルーティグラムティント 109", color: "#E35562", matte: false },
+      { id: 207, brand: "LAKA", name: "フルーティグラムティント 110", color: "#E45CA5", matte: false },
+      { id: 208, brand: "LAKA", name: "フルーティグラムティント 111", color: "#BD5F6C", matte: false },
+      { id: 209, brand: "LAKA", name: "フルーティグラムティント 112", color: "#EC5A96", matte: false },
+      { id: 210, brand: "LAKA", name: "フルーティグラムティント 113", color: "#CC6481", matte: false },
+      { id: 211, brand: "LAKA", name: "フルーティグラムティント 114", color: "#B54634", matte: false },
+      { id: 212, brand: "LAKA", name: "フルーティグラムティント 115", color: "#7D0821", matte: false },
+      { id: 213, brand: "LAKA", name: "フルーティグラムティント 116", color: "#9C020A", matte: false },
+      { id: 214, brand: "LAKA", name: "フルーティグラムティント 117", color: "#C35041", matte: false },
+      { id: 215, brand: "LAKA", name: "フルーティグラムティント 118", color: "#E24677", matte: false },
+      { id: 216, brand: "LAKA", name: "フルーティグラムティント 119", color: "#FF6490", matte: false },
+      { id: 217, brand: "LAKA", name: "フルーティグラムティント 120", color: "#630A06", matte: false },
+      { id: 218, brand: "LAKA", name: "フルーティグラムティント 121", color: "#773F39", matte: false },
+      { id: 219, brand: "LAKA", name: "フルーティグラムティント 122", color: "#C9555C", matte: false },
+      { id: 220, brand: "LAKA", name: "マキシグレイヤーティント 601", color: "#D59E80", matte: false },
+      { id: 221, brand: "LAKA", name: "マキシグレイヤーティント 602", color: "#DA9781", matte: false },
+      { id: 222, brand: "LAKA", name: "マキシグレイヤーティント 603", color: "#EA9BA1", matte: false },
+      { id: 223, brand: "LAKA", name: "マキシグレイヤーティント 604", color: "#E2A599", matte: false },
+      { id: 224, brand: "LAKA", name: "マキシグレイヤーティント 605", color: "#CA936C", matte: false },
+      { id: 225, brand: "LAKA", name: "マキシグレイヤーティント 606", color: "#DB9078", matte: false },
+      { id: 226, brand: "LAKA", name: "マキシグレイヤーティント 607", color: "#CE8D70", matte: false },
+      { id: 227, brand: "LAKA", name: "マキシグレイヤーティント 608", color: "#EC9F9B", matte: false },
+      { id: 228, brand: "LAKA", name: "マキシグレイヤーティント 609", color: "#DDA19F", matte: false },
+      { id: 229, brand: "LAKA", name: "マキシグレイヤーティント 610", color: "#DD6B8A", matte: false },
+      { id: 230, brand: "LAKA", name: "マキシグレイヤーティント 611", color: "#E56D6E", matte: false },
+      { id: 231, brand: "LAKA", name: "マキシグレイヤーティント 612", color: "#D07D7D", matte: false },
+      { id: 232, brand: "LAKA", name: "マキシグレイヤーティント 613", color: "#DA8A8D", matte: false },
+      { id: 233, brand: "LAKA", name: "マキシグレイヤーティント 614", color: "#DB848A", matte: false },
+      { id: 234, brand: "LAKA", name: "マキシグレイヤーティント 615", color: "#D45653", matte: false },
+      { id: 235, brand: "LAKA", name: "マキシグレイヤーティント 616", color: "#CE5A49", matte: false },
+      { id: 236, brand: "LAKA", name: "マキシグレイヤーティント 617", color: "#DF918B", matte: false },
+      { id: 237, brand: "LAKA", name: "マキシグレイヤーティント 618", color: "#C85B5B", matte: false },
+      { id: 238, brand: "LAKA", name: "マキシグレイヤーティント 619", color: "#D4706B", matte: false },
+      { id: 239, brand: "LAKA", name: "マキシグレイヤーティント 620", color: "#C94A61", matte: false },
+      { id: 240, brand: "LAKA", name: "ボンディンググロウリップスティック 201", color: "#C86A70", matte: false },
+      { id: 241, brand: "LAKA", name: "ボンディンググロウリップスティック 202", color: "#C27A7A", matte: false },
+      { id: 242, brand: "LAKA", name: "ボンディンググロウリップスティック 203", color: "#CA6863", matte: false },
+      { id: 243, brand: "LAKA", name: "ボンディンググロウリップスティック 204", color: "#D38488", matte: false },
+      { id: 244, brand: "LAKA", name: "ボンディンググロウリップスティック 205", color: "#CE6C61", matte: false },
+      { id: 245, brand: "LAKA", name: "ボンディンググロウリップスティック 206", color: "#DE6C7B", matte: false },
+      { id: 246, brand: "LAKA", name: "ボンディンググロウリップスティック 207", color: "#C1636E", matte: false },
+      { id: 247, brand: "LAKA", name: "ボンディンググロウリップスティック 208", color: "#CA5855", matte: false },
+      { id: 248, brand: "LAKA", name: "ボンディンググロウリップスティック 209", color: "#C15F44", matte: false },
+      { id: 249, brand: "LAKA", name: "ボンディンググロウリップスティック 210", color: "#B86C59", matte: false },
+      { id: 250, brand: "LAKA", name: "ボンディンググロウリップスティック 211", color: "#C8716C", matte: false },
+      { id: 251, brand: "LAKA", name: "ボンディンググロウリップスティック 212", color: "#C8806F", matte: false },
+      { id: 252, brand: "LAKA", name: "ボンディンググロウリップスティック 213", color: "#B86D66", matte: false },
+      { id: 253, brand: "LAKA", name: "ボンディンググロウリップスティック 214", color: "#DD726A", matte: false },
+      { id: 254, brand: "LAKA", name: "ボンディンググロウリップスティック 215", color: "#D56175", matte: false },
+      { id: 255, brand: "LAKA", name: "ボンディンググロウリップスティック 216", color: "#A34955", matte: false },
+      { id: 256, brand: "LAKA", name: "ボンディンググロウリップスティック 217", color: "#A5625C", matte: false },
+      { id: 257, brand: "LAKA", name: "ボンディンググロウリップスティック 218", color: "#B37469", matte: false },
+      { id: 258, brand: "LAKA", name: "ボンディンググロウリップスティック 219", color: "#C36E67", matte: false },
+      { id: 259, brand: "LAKA", name: "ボンディンググロウリップスティック 220", color: "#975248", matte: false },
+      { id: 260, brand: "LAKA", name: "ポッピングバルーンティント 501", color: "#F06E62", matte: false },
+      { id: 261, brand: "LAKA", name: "ポッピングバルーンティント 502", color: "#AB3B51", matte: false },
+      { id: 262, brand: "LAKA", name: "ポッピングバルーンティント 503", color: "#B74252", matte: false },
+      { id: 263, brand: "LAKA", name: "ポッピングバルーンティント 504", color: "#D02C56", matte: false },
+      { id: 264, brand: "LAKA", name: "ポッピングバルーンティント 505", color: "#FB7250", matte: false },
+      { id: 265, brand: "LAKA", name: "ポッピングバルーンティント 506", color: "#DB5B4F", matte: false },
+      { id: 266, brand: "LAKA", name: "ポッピングバルーンティント 507", color: "#BF484E", matte: false },
+      { id: 267, brand: "LAKA", name: "ポッピングバルーンティント 508", color: "#E5686E", matte: false },
+      { id: 268, brand: "LAKA", name: "ポッピングバルーンティント 509", color: "#E1515A", matte: false },
+      { id: 269, brand: "LAKA", name: "ポッピングバルーンティント 510", color: "#CF97A4", matte: false },
+      { id: 270, brand: "LAKA", name: "ポッピングバルーンティント 511", color: "#D03543", matte: false },
+      { id: 271, brand: "LAKA", name: "ポッピングバルーンティント 512", color: "#94414D", matte: false },
+      { id: 272, brand: "LAKA", name: "ポッピングバルーンティント 990", color: "#873F3A", matte: false },
+      { id: 273, brand: "LAKA", name: "ポッピングバルーンティント 991", color: "#9D6C5D", matte: false },
+      { id: 274, brand: "LAKA", name: "ポッピングバルーンティント 992", color: "#B36F6F", matte: false },
+      { id: 275, brand: "LAKA", name: "ポッピングバルーンティント 993", color: "#94625F", matte: false },
+      { id: 276, brand: "TIRTIR", name: "ウォーターリズムグロウティント 01", color: "#CF727E", matte: false },
+      { id: 277, brand: "TIRTIR", name: "ウォーターリズムグロウティント 02", color: "#E56967", matte: false },
+      { id: 278, brand: "TIRTIR", name: "ウォーターリズムグロウティント 03", color: "#D86B6A", matte: false },
+      { id: 279, brand: "TIRTIR", name: "ウォーターリズムグロウティント 04", color: "#D66D6A", matte: false },
+      { id: 280, brand: "TIRTIR", name: "ウォーターリズムグロウティント 05", color: "#CC5E5D", matte: false },
+      { id: 281, brand: "TIRTIR", name: "ウォーターリズムグロウティント 06", color: "#B64A47", matte: false },
+      { id: 282, brand: "TIRTIR", name: "ウォーターリズムグロウティント 07", color: "#C5504F", matte: false },
+      { id: 283, brand: "TIRTIR", name: "ウォーターリズムグロウティント 08", color: "#C75454", matte: false },
+      { id: 284, brand: "TIRTIR", name: "ウォーターリズムグロウティント 09", color: "#DA7A73", matte: false },
+      { id: 285, brand: "TIRTIR", name: "ウォーターリズムグロウティント 10", color: "#E1636E", matte: false },
+      { id: 286, brand: "TIRTIR", name: "ウォーターリズムグロウティント 11", color: "#D25761", matte: false },
+      { id: 287, brand: "TIRTIR", name: "ウォーターリズムグロウティント 12", color: "#D7646D", matte: false },
+      { id: 288, brand: "TIRTIR", name: "ウォーターリズムグロウティント 13", color: "#D75A6D", matte: false },
+      { id: 289, brand: "TIRTIR", name: "ウォーターリズムグロウティント 14", color: "#DC657E", matte: false },
+      { id: 290, brand: "TIRTIR", name: "ウォーターリズムグロウティント 15", color: "#D74E5A", matte: false },
+      { id: 291, brand: "TIRTIR", name: "ウォーターリズムグロウティント 16", color: "#CE4C63", matte: false },
+      { id: 292, brand: "YSL", name: "ラブシャイン リップスティック 219", color: "#AA3A36", matte: false },
+      { id: 293, brand: "YSL", name: "ラブシャイン リップスティック 10", color: "#A96A65", matte: false },
+      { id: 294, brand: "YSL", name: "ラブシャイン リップスティック 12", color: "#BE4056", matte: false },
+      { id: 295, brand: "YSL", name: "ラブシャイン リップスティック 44", color: "#CF7E81", matte: false },
+      { id: 296, brand: "YSL", name: "ラブシャイン リップスティック 45", color: "#C93C66", matte: false },
+      { id: 297, brand: "YSL", name: "ラブシャイン リップスティック 80", color: "#A1141A", matte: false },
+      { id: 298, brand: "YSL", name: "ラブシャイン リップスティック 122", color: "#982E25", matte: false },
+      { id: 299, brand: "YSL", name: "ラブシャイン リップスティック 150", color: "#DC9D92", matte: false },
+      { id: 300, brand: "YSL", name: "ラブシャイン リップスティック 154", color: "#A04054", matte: false },
+      { id: 301, brand: "YSL", name: "ラブシャイン リップスティック 163", color: "#C53659", matte: false },
+      { id: 302, brand: "YSL", name: "ラブシャイン リップスティック 200", color: "#E2AA91", matte: false },
+      { id: 303, brand: "YSL", name: "ラブシャイン リップスティック 201", color: "#C98677", matte: false },
+      { id: 304, brand: "YSL", name: "ラブシャイン リップスティック 202", color: "#A06458", matte: false },
+      { id: 305, brand: "YSL", name: "ラブシャイン リップスティック 203", color: "#A8666F", matte: false },
+      { id: 306, brand: "YSL", name: "ラブシャイン リップスティック 204", color: "#CC9677", matte: false },
+      { id: 307, brand: "YSL", name: "ラブシャイン リップスティック 205", color: "#9E6560", matte: false },
+      { id: 308, brand: "YSL", name: "ラブシャイン リップスティック 206", color: "#8E3742", matte: false },
+      { id: 309, brand: "YSL", name: "ラブシャイン リップスティック 207", color: "#864F41", matte: false },
+      { id: 310, brand: "YSL", name: "ラブシャイン リップスティック 208", color: "#BC445F", matte: false },
+      { id: 311, brand: "YSL", name: "ラブシャイン リップスティック 209", color: "#C35C6D", matte: false },
+      { id: 312, brand: "YSL", name: "ラブシャイン リップスティック 210", color: "#C94041", matte: false },
+      { id: 313, brand: "YSL", name: "ラブシャイン リップスティック 211", color: "#CB4B58", matte: false },
+      { id: 314, brand: "YSL", name: "ラブシャイン リップスティック 212", color: "#A12641", matte: false },
+      { id: 315, brand: "YSL", name: "ラブシャイン リップスティック 213", color: "#A46369", matte: false },
+      { id: 316, brand: "YSL", name: "ラブシャイン リップスティック 214", color: "#A26864", matte: false },
+      { id: 317, brand: "YSL", name: "ラブシャイン リップスティック 215", color: "#B26060", matte: false },
+      { id: 318, brand: "YSL", name: "ラブシャイン グロスプランパー 01", color: "#887592", matte: false },
+      { id: 319, brand: "YSL", name: "ラブシャイン グロスプランパー 02", color: "#D19694", matte: false },
+      { id: 320, brand: "YSL", name: "ラブシャイン グロスプランパー 03", color: "#CA746D", matte: false },
+      { id: 321, brand: "YSL", name: "ラブシャイン グロスプランパー 04", color: "#93564F", matte: false },
+      { id: 322, brand: "YSL", name: "ラブシャイン グロスプランパー 05", color: "#AB5934", matte: false },
+      { id: 323, brand: "YSL", name: "ラブシャイン グロスプランパー 06", color: "#713D3A", matte: false },
+      { id: 324, brand: "YSL", name: "ラブシャイン グロスプランパー 07", color: "#C53A47", matte: false },
+      { id: 325, brand: "YSL", name: "ラブシャイン グロスプランパー 08", color: "#9A495C", matte: false },
+      { id: 326, brand: "YSL", name: "ラブシャイン グロスプランパー 09", color: "#C2304A", matte: false },
+      { id: 327, brand: "YSL", name: "ラブシャイン グロスプランパー 10", color: "#F1D7CB", matte: false },
+      { id: 328, brand: "YSL", name: "ラブシャイン グロスプランパー 12", color: "#DA8A77", matte: false },
+      { id: 329, brand: "YSL", name: "ラブシャイン グロスプランパー 44", color: "#B5696E", matte: false },
+      { id: 330, brand: "YSL", name: "ラブシャイン キャンディ グロウ バーム 1B", color: "#BE5E5B", matte: false },
+      { id: 331, brand: "YSL", name: "ラブシャイン キャンディ グロウ バーム 3B", color: "#DA8CA5", matte: false },
+      { id: 332, brand: "YSL", name: "ラブシャイン キャンディ グロウ バーム 5B", color: "#BA6356", matte: false },
+      { id: 333, brand: "YSL", name: "ラブシャイン キャンディ グロウ バーム 6B", color: "#8A293B", matte: false },
+      { id: 334, brand: "YSL", name: "ラブシャイン キャンディ グロウ バーム 7B", color: "#904A3A", matte: false },
+      { id: 335, brand: "YSL", name: "ラブシャイン キャンディ グロウ バーム 8B", color: "#9D5A52", matte: false },
+      { id: 336, brand: "YSL", name: "ラブシャイン キャンディ グロウ バーム 10B", color: "#AF69A8", matte: false },
+      { id: 337, brand: "YSL", name: "ラブシャイン キャンディ グロウ バーム 44B", color: "#BE5E5B", matte: false },
+      { id: 338, brand: "MAC", name: "ラスターガラス リップスティック 571", color: "#55382A", matte: false },
+      { id: 339, brand: "MAC", name: "ラスターガラス リップスティック 569", color: "#956158", matte: false },
+      { id: 340, brand: "MAC", name: "ラスターガラス リップスティック 543", color: "#A74F43", matte: false },
+      { id: 341, brand: "MAC", name: "ラスターガラス リップスティック 540", color: "#CB716C", matte: false },
+      { id: 342, brand: "MAC", name: "ラスターガラス リップスティック 568", color: "#BF6C6B", matte: false },
+      { id: 343, brand: "MAC", name: "ラスターガラス リップスティック 508", color: "#AD6358", matte: false },
+      { id: 344, brand: "MAC", name: "ラスターガラス リップスティック 567", color: "#7A372C", matte: false },
+      { id: 345, brand: "MAC", name: "ラスターガラス リップスティック 524", color: "#BD6772", matte: false },
+      { id: 346, brand: "MAC", name: "ラスターガラス リップスティック 570", color: "#895950", matte: false },
+      { id: 347, brand: "MAC", name: "ラスターガラス リップスティック 544", color: "#A84539", matte: false },
+      { id: 348, brand: "MAC", name: "ラスターガラス リップスティック 553", color: "#6A3B27", matte: false },
+      { id: 349, brand: "MAC", name: "ラスターガラス リップスティック 549", color: "#902924", matte: false },
+      { id: 350, brand: "MAC", name: "ラスターガラス リップスティック 520", color: "#D94F51", matte: false },
+      { id: 351, brand: "MAC", name: "ラスターガラス リップスティック 563", color: "#82281D", matte: false },
+      { id: 352, brand: "MAC", name: "ラスターガラス リップスティック 566", color: "#8F3935", matte: false },
+      { id: 353, brand: "MAC", name: "ラスターガラス リップスティック 564", color: "#E54F50", matte: false },
+      { id: 354, brand: "MAC", name: "ラスターガラス リップスティック 565", color: "#E44658", matte: false },
+      { id: 355, brand: "MAC", name: "ラスターガラス リップスティック 522", color: "#85241B", matte: false },
+      { id: 356, brand: "MAC", name: "ラスターガラス リップスティック 554", color: "#924529", matte: false },
+      { id: 357, brand: "MAC", name: "ラスターガラス リップスティック 502", color: "#BF2128", matte: false },
+      { id: 358, brand: "MAC", name: "ラスターガラス リップスティック 550", color: "#37131F", matte: false },
+      { id: 359, brand: "MAC", name: "ラスターガラス リップスティック 542", color: "#E07A75", matte: false },
+      { id: 360, brand: "MAC", name: "ラスターガラス リップスティック 562", color: "#851A08", matte: false },
+      { id: 361, brand: "MAC", name: "ラスターガラス リップスティック 552", color: "#EA2F22", matte: false },
+      { id: 362, brand: "MAC", name: "ラスターガラス リップスティック 559", color: "#F0547F", matte: false },
+      { id: 363, brand: "MAC", name: "ラスターガラス リップスティック 549", color: "#A5384F", matte: false },
+      { id: 364, brand: "MAC", name: "ラスターガラス リップスティック 547", color: "#D65360", matte: false },
+      { id: 365, brand: "MAC", name: "ラスターガラス リップスティック 510", color: "#B42226", matte: false },
+      { id: 366, brand: "MAC", name: "ラスターガラス リップスティック 551", color: "#BB3428", matte: false },
+      { id: 367, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 904", color: "#B17860", matte: false },
+      { id: 368, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 901", color: "#9C6852", matte: false },
+      { id: 369, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 912", color: "#A36D5F", matte: false },
+      { id: 370, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 905", color: "#C6817C", matte: false },
+      { id: 371, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 923", color: "#A5484B", matte: false },
+      { id: 372, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 927", color: "#57312D", matte: false },
+      { id: 373, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 930", color: "#A53135", matte: false },
+      { id: 374, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 900", color: "#55382F", matte: false },
+      { id: 375, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 316", color: "#9E2E29", matte: false },
+      { id: 376, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 902", color: "#563433", matte: false },
+      { id: 377, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 926", color: "#8E2A36", matte: false },
+      { id: 378, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 903", color: "#C23926", matte: false },
+      { id: 379, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 906", color: "#5B0D46", matte: false },
+      { id: 380, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 925", color: "#8F3222", matte: false },
+      { id: 381, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 907", color: "#B67180", matte: false },
+      { id: 382, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 314", color: "#AF574D", matte: false },
+      { id: 383, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 908", color: "#B77154", matte: false },
+      { id: 384, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 909", color: "#AA5443", matte: false },
+      { id: 385, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 910", color: "#9A0A3E", matte: false },
+      { id: 386, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 304", color: "#C65866", matte: false },
+      { id: 387, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 931", color: "#AF655D", matte: false },
+      { id: 388, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 308", color: "#D03940", matte: false },
+      { id: 389, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 935", color: "#A81130", matte: false },
+      { id: 390, brand: "MAC", name: "パウダー キス ヘイジー マット リップスティック 301", color: "#C26363", matte: false },
+      { id: 391, brand: "ADDICTION", name: "ザ マット リップ リキッド 01", color: "#9C5244", matte: true },
+      { id: 392, brand: "ADDICTION", name: "ザ マット リップ リキッド 02", color: "#8F5D47", matte: true },
+      { id: 393, brand: "ADDICTION", name: "ザ マット リップ リキッド 04", color: "#88051A", matte: true },
+      { id: 394, brand: "ADDICTION", name: "ザ マット リップ リキッド 05", color: "#720C0E", matte: true },
+      { id: 395, brand: "ADDICTION", name: "ザ マット リップ リキッド 06", color: "#AA0618", matte: true },
+      { id: 396, brand: "ADDICTION", name: "ザ マット リップ リキッド 10", color: "#5E3921", matte: true },
+      { id: 397, brand: "ADDICTION", name: "ザ マット リップ リキッド 11", color: "#610F03", matte: true },
+      { id: 398, brand: "ADDICTION", name: "ザ マット リップ リキッド 12", color: "#6D1F02", matte: true },
+      { id: 399, brand: "ADDICTION", name: "ザ マット リップ リキッド 13", color: "#57342A", matte: true },
+      { id: 400, brand: "ADDICTION", name: "ザ マット リップ リキッド 14", color: "#D7413F", matte: true },
+      { id: 401, brand: "ADDICTION", name: "ザ マット リップ リキッド 15", color: "#9D3931", matte: true },
+      { id: 402, brand: "ADDICTION", name: "ザ マット リップ リキッド 17", color: "#8F4247", matte: true },
+      { id: 403, brand: "ADDICTION", name: "ザ マット リップ リキッド 19S", color: "#E79A86", matte: true },
+      { id: 404, brand: "ADDICTION", name: "ザ マット リップ リキッド 20S", color: "#B2756C", matte: true },
+      { id: 405, brand: "ADDICTION", name: "ザ マット リップ リキッド 21S", color: "#A67869", matte: true },
+      { id: 406, brand: "ADDICTION", name: "ザ マット リップ リキッド 22", color: "#8A3F3C", matte: true },
+      { id: 407, brand: "ADDICTION", name: "ザ マット リップ リキッド 23", color: "#9B5452", matte: true },
+      { id: 408, brand: "peripera", name: "インク ムード グロイ ティント 01", color: "#D46E66", matte: false },
+      { id: 409, brand: "peripera", name: "インク ムード グロイ ティント 02", color: "#EE7874", matte: false },
+      { id: 410, brand: "peripera", name: "インク ムード グロイ ティント 03", color: "#DE6672", matte: false },
+      { id: 411, brand: "peripera", name: "インク ムード グロイ ティント 04", color: "#E27182", matte: false },
+      { id: 412, brand: "peripera", name: "インク ムード グロイ ティント 05", color: "#D9395C", matte: false },
+      { id: 413, brand: "peripera", name: "インク ムード グロイ ティント 06", color: "#CE4F65", matte: false },
+      { id: 414, brand: "peripera", name: "インク ムード グロイ ティント 13", color: "#D0526D", matte: false },
+      { id: 415, brand: "peripera", name: "インク ムード グロイ ティント 18", color: "#E87C7C", matte: false },
+      { id: 416, brand: "peripera", name: "インク ムード グロイ ティント 20", color: "#CF5656", matte: false },
+      { id: 417, brand: "peripera", name: "インク ムード グロイ ティント 21", color: "#EE7693", matte: false },
+      { id: 418, brand: "peripera", name: "インク ムード グロイ ティント 22", color: "#E66174", matte: false },
+      { id: 419, brand: "peripera", name: "インク ムード グロイ ティント 23", color: "#F2727E", matte: false },
+      { id: 420, brand: "peripera", name: "インク ムード グロイ ティント 24", color: "#E4656C", matte: false },
+      { id: 421, brand: "peripera", name: "インク ムード グロイ ティント 25", color: "#F3476B", matte: false },
+      { id: 422, brand: "peripera", name: "インク ムード グロイ ティント 26", color: "#E75177", matte: false },
+      { id: 423, brand: "peripera", name: "インク ムード グロイ ティント 27", color: "#ED6C84", matte: false },
+      { id: 424, brand: "peripera", name: "インク ムード グロイ ティント 28", color: "#E36268", matte: false },
+      { id: 425, brand: "peripera", name: "インク ムード グロイ ティント 29", color: "#DD627E", matte: false },
+      { id: 426, brand: "dasique", name: "ジューシーデュイティント 01", color: "#EF846F", matte: false },
+      { id: 427, brand: "dasique", name: "ジューシーデュイティント 02", color: "#EC7569", matte: false },
+      { id: 428, brand: "dasique", name: "ジューシーデュイティント 03", color: "#F0708B", matte: false },
+      { id: 429, brand: "dasique", name: "ジューシーデュイティント 05", color: "#D67A8C", matte: false },
+      { id: 430, brand: "dasique", name: "ジューシーデュイティント 07", color: "#CC7183", matte: false },
+      { id: 431, brand: "dasique", name: "ジューシーデュイティント 08", color: "#E57E79", matte: false },
+      { id: 432, brand: "dasique", name: "ジューシーデュイティント 09", color: "#E36B6D", matte: false },
+      { id: 433, brand: "dasique", name: "ジューシーデュイティント 10", color: "#DA7275", matte: false },
+      { id: 434, brand: "dasique", name: "ジューシーデュイティント 11", color: "#DC776A", matte: false },
+      { id: 435, brand: "dasique", name: "ジューシーデュイティント 12", color: "#DA786D", matte: false },
+      { id: 436, brand: "dasique", name: "ジューシーデュイティント 13", color: "#DE7979", matte: false },
+      { id: 437, brand: "dasique", name: "ジューシーデュイティント 14", color: "#DA7F77", matte: false },
+      { id: 438, brand: "dasique", name: "ジューシーデュイティント 21", color: "#CE7571", matte: false },
+      { id: 439, brand: "dasique", name: "ジューシーデュイティント 22", color: "#D96C65", matte: false },
+      { id: 440, brand: "dasique", name: "ジューシーデュイティント 23", color: "#D47778", matte: false },
+      { id: 441, brand: "dasique", name: "ジューシーデュイティント 24", color: "#FB977B", matte: false },
+      { id: 442, brand: "dasique", name: "ジューシーデュイティント 25", color: "#9D4B51", matte: false },
+      { id: 443, brand: "dasique", name: "ジューシーデュイティント 26", color: "#993449", matte: false },
+      { id: 444, brand: "dasique", name: "ジューシーデューイグロウティント 01", color: "#FD7E85", matte: false },
+      { id: 445, brand: "dasique", name: "ジューシーデューイグロウティント 02", color: "#FD836D", matte: false },
+      { id: 446, brand: "dasique", name: "ジューシーデューイグロウティント 03", color: "#F3746F", matte: false },
+      { id: 447, brand: "dasique", name: "ジューシーデューイグロウティント 04", color: "#F8837D", matte: false },
+      { id: 448, brand: "dasique", name: "ジューシーデューイグロウティント 05", color: "#E65E55", matte: false },
+      { id: 449, brand: "dasique", name: "ジューシーデューイグロウティント 06", color: "#DA4853", matte: false },
+      { id: 450, brand: "dasique", name: "ジューシーデューイグロウティント 07", color: "#D95A4A", matte: false },
+      { id: 451, brand: "dasique", name: "ジューシーデューイグロウティント 08", color: "#F99EAD", matte: false },
+      { id: 452, brand: "dasique", name: "ジューシーデューイグロウティント 09", color: "#FA8498", matte: false },
+      { id: 453, brand: "dasique", name: "ジューシーデューイグロウティント 10", color: "#EE6C80", matte: false },
+      { id: 454, brand: "dasique", name: "ジューシーデューイグロウティント 11", color: "#FB7597", matte: false },
+      { id: 455, brand: "dasique", name: "ジューシーデューイグロウティント 12", color: "#EF4D76", matte: false },
+      { id: 456, brand: "dasique", name: "ジューシーデューイグロウティント 13", color: "#D24562", matte: false },
+      { id: 457, brand: "dasique", name: "ジューシーデューイグロウティント 14", color: "#C15B67", matte: false },
+      { id: 458, brand: "BBIA", name: "ローティント 01", color: "#D46B6B", matte: false },
+      { id: 459, brand: "BBIA", name: "ローティント 02", color: "#CC586D", matte: false },
+      { id: 460, brand: "BBIA", name: "ローティント 03", color: "#BD3F64", matte: false },
+      { id: 461, brand: "BBIA", name: "ローティント 04", color: "#C94841", matte: false },
+      { id: 462, brand: "BBIA", name: "ローティント 05", color: "#D92D48", matte: false },
+      { id: 463, brand: "BBIA", name: "ローティント 06", color: "#E05073", matte: false },
+      { id: 464, brand: "BBIA", name: "ローティント 07", color: "#E76E5C", matte: false },
+      { id: 465, brand: "BBIA", name: "ローティント 08", color: "#A8504C", matte: false },
+      { id: 466, brand: "BBIA", name: "ローティント 09", color: "#C5595F", matte: false },
+      { id: 467, brand: "BBIA", name: "グローリップティント 00", color: "#D75160", matte: false },
+      { id: 468, brand: "BBIA", name: "グローリップティント 01", color: "#EB6C57", matte: false },
+      { id: 469, brand: "BBIA", name: "グローリップティント 02", color: "#C64047", matte: false },
+      { id: 470, brand: "BBIA", name: "グローリップティント 03", color: "#B3364B", matte: false },
+      { id: 471, brand: "BBIA", name: "グローリップティント 04", color: "#BF2F2C", matte: false },
+      { id: 472, brand: "BBIA", name: "グローリップティント 05", color: "#A62938", matte: false },
+      { id: 473, brand: "BBIA", name: "グローリップティント 06", color: "#EA515E", matte: false },
+      { id: 474, brand: "BBIA", name: "グローリップティント 07", color: "#F44E80", matte: false },
+      { id: 475, brand: "BBIA", name: "グローリップティント 08", color: "#F13420", matte: false },
+      { id: 476, brand: "BBIA", name: "グローリップティント 09", color: "#EE7C8C", matte: false },
+      { id: 477, brand: "BBIA", name: "グローリップティント 10", color: "#F95446", matte: false },
+      { id: 478, brand: "BBIA", name: "グローリップティント 11", color: "#B96567", matte: false },
+      { id: 479, brand: "BBIA", name: "グローリップティント 12", color: "#92403C", matte: false },
+      { id: 480, brand: "BBIA", name: "グローリップティント 13", color: "#8F3A40", matte: false },
+      { id: 481, brand: "fwee", name: "3Dボリューミングティント 01", color: "#E37795", matte: false },
+      { id: 482, brand: "fwee", name: "3Dボリューミングティント 02", color: "#E27A81", matte: false },
+      { id: 483, brand: "fwee", name: "3Dボリューミングティント 03", color: "#E68493", matte: false },
+      { id: 484, brand: "fwee", name: "3Dボリューミングティント 04", color: "#E77B73", matte: false },
+      { id: 485, brand: "fwee", name: "3Dボリューミングティント 05", color: "#E67583", matte: false },
+      { id: 486, brand: "fwee", name: "3Dボリューミングティント 06", color: "#EB6F8D", matte: false },
+      { id: 487, brand: "fwee", name: "3Dボリューミングティント 07", color: "#E96C79", matte: false },
+      { id: 488, brand: "fwee", name: "3Dボリューミングティント 08", color: "#EB6A65", matte: false },
+      { id: 489, brand: "fwee", name: "3Dボリューミングティント 09", color: "#DE5761", matte: false },
+      { id: 490, brand: "fwee", name: "3Dボリューミングティント 10", color: "#D05066", matte: false },
+      { id: 491, brand: "fwee", name: "3Dボリューミングティント 11", color: "#D55A80", matte: false },
+      { id: 492, brand: "fwee", name: "3Dボリューミングティント 12", color: "#D55A80", matte: false },
+      { id: 493, brand: "OPERA", name: "リップティント 05", color: "#FE6454", matte: false },
+      { id: 494, brand: "OPERA", name: "リップティント 06", color: "#ED4D58", matte: false },
+      { id: 495, brand: "OPERA", name: "リップティント 20", color: "#F9717C", matte: false },
+      { id: 496, brand: "OPERA", name: "リップティント 15", color: "#FC7C71", matte: false },
+      { id: 497, brand: "OPERA", name: "リップティント 09", color: "#CE4F3C", matte: false },
+      { id: 498, brand: "OPERA", name: "リップティント 21", color: "#E46063", matte: false },
+      { id: 499, brand: "OPERA", name: "リップティント 19", color: "#C05767", matte: false },
+      { id: 500, brand: "OPERA", name: "リップティント 11", color: "#B1392E", matte: false },
+      { id: 501, brand: "OPERA", name: "リップティント 16", color: "#AD5A44", matte: false },
+      { id: 502, brand: "OPERA", name: "リップティント 10", color: "#9D3525", matte: false },
+      { id: 503, brand: "ENTROPY MAKEUP", name: "チャームティント　グロッシージェル 492C", color: "#8E2932", matte: false },
+      { id: 504, brand: "ENTROPY MAKEUP", name: "チャームティント　グロッシージェル 2340C", color: "#F36E70", matte: false },
+      { id: 505, brand: "ENTROPY MAKEUP", name: "チャームティント　グロッシージェル 2341C", color: "#F9A188", matte: false },
+      { id: 506, brand: "ENTROPY MAKEUP", name: "チャームティント　グロッシージェル 1675C", color: "#FA8777", matte: false },
+      { id: 507, brand: "ENTROPY MAKEUP", name: "チャームティント　グロッシージェル 7522C", color: "#F58975", matte: false },
+      { id: 508, brand: "INTOYOU", name: "スーパーマットリップ＆チークマッド リップ＆チーク EM05", color: "#BB6C5D", matte: true },
+      { id: 509, brand: "INTOYOU", name: "スーパーマットリップ＆チークマッド リップ＆チーク EM07", color: "#80373A", matte: true },
+      { id: 510, brand: "INTOYOU", name: "スーパーマットリップ＆チークマッド リップ＆チーク EM08", color: "#B35D58", matte: true },
+      { id: 511, brand: "INTOYOU", name: "スーパーマットリップ＆チークマッド リップ＆チーク EM09", color: "#B76961", matte: true },
+      { id: 512, brand: "INTOYOU", name: "スーパーマットリップ＆チークマッド リップ＆チーク EM10", color: "#A95F5D", matte: true },
+      { id: 513, brand: "INTOYOU", name: "スーパーマットリップ＆チークマッド リップ＆チーク EM11", color: "#BF6666", matte: true },
+      { id: 514, brand: "INTOYOU", name: "スーパーマットリップ＆チークマッド リップ＆チーク EM24", color: "#B15852", matte: true },
+      { id: 515, brand: "INTOYOU", name: "スーパーマットリップ＆チークマッド リップ＆チーク EM525", color: "#D5736D", matte: true },
+      { id: 516, brand: "rom&nd", name: "ゼロマットリップスティック 01", color: "#C65B5D", matte: false },
+      { id: 517, brand: "rom&nd", name: "ゼロマットリップスティック 02", color: "#CB5D53", matte: false },
+      { id: 518, brand: "rom&nd", name: "ゼロマットリップスティック 03", color: "#C75255", matte: false },
+      { id: 519, brand: "rom&nd", name: "ゼロマットリップスティック 04", color: "#C5525A", matte: true },
+      { id: 520, brand: "rom&nd", name: "ゼロマットリップスティック 05", color: "#C3574A", matte: true },
+      { id: 521, brand: "rom&nd", name: "ゼロマットリップスティック 06", color: "#EE7A6C", matte: true },
+      { id: 522, brand: "rom&nd", name: "ゼロマットリップスティック 07", color: "#C76966", matte: true },
+      { id: 523, brand: "rom&nd", name: "ゼロマットリップスティック 08", color: "#E76669", matte: true },
+      { id: 524, brand: "rom&nd", name: "ゼロマットリップスティック 09", color: "#ED8773", matte: true },
+      { id: 525, brand: "rom&nd", name: "ゼロマットリップスティック 10", color: "#E6757C", matte: true },
+      { id: 526, brand: "rom&nd", name: "ゼロマットリップスティック 11", color: "#D13E52", matte: true },
+      { id: 527, brand: "rom&nd", name: "ゼロマットリップスティック 12", color: "#C75354", matte: true },
+      { id: 528, brand: "rom&nd", name: "ゼロマットリップスティック 13", color: "#AA3136", matte: true },
+      { id: 529, brand: "rom&nd", name: "ゼロマットリップスティック 14", color: "#B74255", matte: true },
+      { id: 530, brand: "rom&nd", name: "ゼロマットリップスティック 15", color: "#791D23", matte: true },
+      { id: 531, brand: "rom&nd", name: "ゼロマットリップスティック 16", color: "#CC3F35", matte: true },
+      { id: 532, brand: "rom&nd", name: "ゼロマットリップスティック 17", color: "#D23A40", matte: true },
+      { id: 533, brand: "rom&nd", name: "ゼロマットリップスティック 18", color: "#C24941", matte: true },
+      { id: 534, brand: "rom&nd", name: "ゼロマットリップスティック 19", color: "#CA3446", matte: true },
+      { id: 535, brand: "rom&nd", name: "ゼロマットリップスティック 20", color: "#932F34", matte: true },
+      { id: 536, brand: "rom&nd", name: "ゼロマットリップスティック 21", color: "#D7837B", matte: true },
+      { id: 537, brand: "rom&nd", name: "ゼロマットリップスティック 22", color: "#C66E77", matte: true },
+      { id: 538, brand: "rom&nd", name: "ゼロマットリップスティック 23", color: "#BA605A", matte: true },
+      { id: 539, brand: "rom&nd", name: "ゼロベルベットティント 01", color: "#F15D53", matte: true },
+      { id: 540, brand: "rom&nd", name: "ゼロベルベットティント 02", color: "#EF5C59", matte: true },
+      { id: 541, brand: "rom&nd", name: "ゼロベルベットティント 03", color: "#D2363C", matte: true },
+      { id: 542, brand: "rom&nd", name: "ゼロベルベットティント 04", color: "#D45960", matte: true },
+      { id: 543, brand: "rom&nd", name: "ゼロベルベットティント 05", color: "#C24033", matte: true },
+      { id: 544, brand: "rom&nd", name: "ゼロベルベットティント 06", color: "#9B2C2F", matte: true },
+      { id: 545, brand: "rom&nd", name: "ゼロベルベットティント 07", color: "#DB2F41", matte: true },
+      { id: 546, brand: "rom&nd", name: "ゼロベルベットティント 08", color: "#DC4A5A", matte: true },
+      { id: 547, brand: "rom&nd", name: "ゼロベルベットティント 09", color: "#F65A6B", matte: true },
+      { id: 548, brand: "rom&nd", name: "ゼロベルベットティント 10", color: "#DD4B43", matte: true },
+      { id: 549, brand: "rom&nd", name: "ゼロベルベットティント 11", color: "#E53635", matte: true },
+      { id: 550, brand: "rom&nd", name: "ゼロベルベットティント 12", color: "#DA4743", matte: true },
+      { id: 551, brand: "rom&nd", name: "ゼロベルベットティント 13", color: "#CE303B", matte: true },
+      { id: 552, brand: "rom&nd", name: "ゼロベルベットティント 14", color: "#C14248", matte: true },
+      { id: 553, brand: "rom&nd", name: "ゼロベルベットティント 15", color: "#B3422E", matte: true },
+      { id: 554, brand: "rom&nd", name: "ゼロベルベットティント 16", color: "#D35B5E", matte: true },
+      { id: 555, brand: "rom&nd", name: "ゼロベルベットティント 17", color: "#D06855", matte: true },
+      { id: 556, brand: "rom&nd", name: "ゼロベルベットティント 18", color: "#BC6775", matte: true },
+      { id: 557, brand: "rom&nd", name: "ゼロベルベットティント 19", color: "#B84A49", matte: true },
+      { id: 558, brand: "rom&nd", name: "ゼロベルベットティント 20", color: "#A73C3B", matte: true },
+      { id: 559, brand: "rom&nd", name: "ゼロベルベットティント 21", color: "#7B202E", matte: true },
+      { id: 560, brand: "rom&nd", name: "ゼロベルベットティント 22", color: "#BC665B", matte: true },
+      { id: 561, brand: "rom&nd", name: "ゼロベルベットティント 23", color: "#833B34", matte: true },
+      { id: 562, brand: "rom&nd", name: "ゼロベルベットティント 24", color: "#963C3A", matte: true },
+      { id: 563, brand: "rom&nd", name: "ゼロベルベットティント 25", color: "#953F4B", matte: true },
+      { id: 564, brand: "KATE", name: "リップモンスター　スフレマット M01", color: "#94373A", matte: true },
+      { id: 565, brand: "KATE", name: "リップモンスター　スフレマット M02", color: "#C65457", matte: true },
+      { id: 566, brand: "KATE", name: "リップモンスター　スフレマット M03", color: "#B44455", matte: true },
+      { id: 567, brand: "KATE", name: "リップモンスター　スフレマット M04", color: "#8E392C", matte: true },
+      { id: 568, brand: "KATE", name: "リップモンスター　スフレマット M05", color: "#A6594F", matte: true },
+      { id: 569, brand: "KATE", name: "リップモンスター　スフレマット M06", color: "#924540", matte: true },
+      { id: 570, brand: "KATE", name: "リップモンスター　スフレマット M07", color: "#97483D", matte: true },
+      { id: 571, brand: "KATE", name: "リップモンスター　スフレマット M08", color: "#AA6164", matte: true },
+      { id: 572, brand: "ちふれ", name: "ラスティングリップスティック PK10", color: "#D96567", matte: false },
+      { id: 573, brand: "ちふれ", name: "ラスティングリップスティック PK41", color: "#B24C46", matte: false },
+      { id: 574, brand: "ちふれ", name: "ラスティングリップスティック PK42", color: "#A74748", matte: false },
+      { id: 575, brand: "ちふれ", name: "ラスティングリップスティック OR70", color: "#A83323", matte: false },
+      { id: 576, brand: "ちふれ", name: "ラスティングリップスティック OR11", color: "#CE5541", matte: false },
+      { id: 577, brand: "ちふれ", name: "ラスティングリップスティック RD70", color: "#902818", matte: false },
+      { id: 578, brand: "ちふれ", name: "ラスティングリップスティック RD71", color: "#B00310", matte: false },
+      { id: 579, brand: "ちふれ", name: "ラスティングリップスティック RD41", color: "#BB3533", matte: false },
+      { id: 580, brand: "ちふれ", name: "ラスティングリップスティック BE12", color: "#B5634E", matte: false },
+      { id: 581, brand: "ちふれ", name: "ラスティングリップスティック BR40", color: "#783A25", matte: false },
+      { id: 582, brand: "ちふれ", name: "ラスティングリップスティック BR70", color: "#893E2E", matte: false },
+      { id: 583, brand: "KATE", name: "パーソナルリップクリーム 02", color: "#E36C5A", matte: false },
+      { id: 584, brand: "KATE", name: "パーソナルリップクリーム 04", color: "#AA433C", matte: false },
+      { id: 585, brand: "KATE", name: "パーソナルリップクリーム 06", color: "#C16843", matte: false },
+      { id: 586, brand: "KATE", name: "パーソナルリップクリーム 07", color: "#B36D72", matte: false },
+      { id: 587, brand: "KATE", name: "パーソナルリップクリーム 08", color: "#A65F43", matte: false },
+      { id: 588, brand: "KATE", name: "パーソナルリップクリーム 09", color: "#F9DFE9", matte: false },
+      { id: 589, brand: "AMUSE", name: "ジェルフィットグロス 01", color: "#BB8073", matte: false },
+      { id: 590, brand: "AMUSE", name: "ジェルフィットグロス 02", color: "#ED549D", matte: false },
+      { id: 591, brand: "AMUSE", name: "ジェルフィットグロス 03", color: "#DE5666", matte: false },
+      { id: 592, brand: "AMUSE", name: "ジェルフィットグロス 04", color: "#A54171", matte: false },
+      { id: 593, brand: "AMUSE", name: "ジェルフィットグロス 05", color: "#E36968", matte: false },
+      { id: 594, brand: "AMUSE", name: "ジェルフィットグロス 06", color: "#EE719A", matte: false },
+      { id: 595, brand: "AMUSE", name: "ジェルフィットグロス パンプキンパールグロス", color: "#B5614F", matte: false },
+      { id: 596, brand: "AMUSE", name: "ジェルフィットグロス すももパールグロス", color: "#B4706F", matte: false },
+      { id: 597, brand: "AMUSE", name: "ジェルフィットグロス 桜グロス", color: "#BD618C", matte: false },
+      { id: 598, brand: "AMUSE", name: "ジェルフィットグロス プリングロス", color: "#7C4C42", matte: false },
+      { id: 599, brand: "AMUSE", name: "ジェルフィットグロス カフェインチェリーグロス", color: "#712328", matte: false },
+      { id: 600, brand: "Dinto", name: "ブラーグローイーリップティント 201", color: "#E36453", matte: false },
+      { id: 601, brand: "Dinto", name: "ブラーグローイーリップティント 202", color: "#A85A48", matte: false },
+      { id: 602, brand: "Dinto", name: "ブラーグローイーリップティント 203", color: "#CD7B7A", matte: false },
+      { id: 603, brand: "Dinto", name: "ブラーグローイーリップティント 204", color: "#8F4C54", matte: false },
+      { id: 604, brand: "Dinto", name: "ブラーグローイーリップティント 205", color: "#F57885", matte: false },
+      { id: 605, brand: "Dinto", name: "ブラーグローイーリップティント 206", color: "#ED6463", matte: false },
+      { id: 606, brand: "Dinto", name: "ブラーグローイーリップティント 207", color: "#E0405C", matte: false },
+      { id: 607, brand: "Dinto", name: "ブラーグローイーリップティント 208", color: "#B61922", matte: false },
+      { id: 608, brand: "Dinto", name: "ブラーグローイーリップティント 209", color: "#682021", matte: false },
+      { id: 609, brand: "Dinto", name: "ブラーグローイーリップティント 210", color: "#BA584C", matte: false },
+      { id: 610, brand: "Dinto", name: "ブラーグローイーリップティント 211", color: "#EE8A74", matte: false },
+      { id: 611, brand: "Dinto", name: "ブラーグローイーリップティント 212", color: "#EE6A4E", matte: false },
+      { id: 612, brand: "Dinto", name: "ブラーグローイーリップティント 213", color: "#BB8574", matte: false },
+      { id: 613, brand: "Dinto", name: "ブラーグローイーリップティント 214", color: "#8B5965", matte: false },
+      { id: 614, brand: "Dinto", name: "ブラーグローイーリップティント 215", color: "#DF4C62", matte: false },
+      { id: 615, brand: "Dinto", name: "ブラーグローイーリップティント 216", color: "#E8458A", matte: false },
+      { id: 616, brand: "Dinto", name: "ブラーグローイーリップティント 217", color: "#B88172", matte: false },
+      { id: 617, brand: "Dinto", name: "ブラーグローイーリップティント 218", color: "#5D191B", matte: false },
+      { id: 618, brand: "Dinto", name: "ブラーグローイーリップティント 219", color: "#C38A9F", matte: false },
+      { id: 619, brand: "Dinto", name: "ブラーグローイーリップティント 220", color: "#6D3154", matte: false },
+      { id: 620, brand: "Dinto", name: "ブラーグローイーリップティント 221", color: "#8C4170", matte: false },
+      { id: 621, brand: "Dinto", name: "ブラーグローイーリップティント 222", color: "#6A0C38", matte: false },
+      { id: 622, brand: "Dinto", name: "ブラーグローイーリップティント 223", color: "#C20E61", matte: false },
+      { id: 623, brand: "Dinto", name: "ブラーグローイーリップティント 224", color: "#DF1939", matte: false },
+      { id: 624, brand: "Dinto", name: "ブラーグローイーリップティント 225", color: "#DC2B41", matte: false },
+      { id: 625, brand: "Dinto", name: "ブラーグローイーリップティント 226", color: "#A93E3C", matte: false },
+      { id: 626, brand: "Dinto", name: "ブラーグローイーリップティント 227", color: "#492221", matte: false },
+      { id: 627, brand: "Dinto", name: "ブラーグローイーリップティント 228", color: "#AD3C48", matte: false },
+      { id: 628, brand: "Dinto", name: "ブラーグローイーリップティント 229", color: "#B15E65", matte: false },
+      { id: 629, brand: "Dinto", name: "ブラーグローイーリップティント 230", color: "#EE6782", matte: false },
+      { id: 630, brand: "Dinto", name: "ブラーグローイーリップティント 231", color: "#BF6B86", matte: false },
+      { id: 631, brand: "Dinto", name: "ブラーグローイーリップティント 232", color: "#D76C98", matte: false },
+      { id: 632, brand: "Dinto", name: "ブラーグローイーリップティント 233", color: "#D47AAB", matte: false },
+      { id: 633, brand: "Dinto", name: "ブラーグローイーリップティント 234", color: "#EE776B", matte: false },
+      { id: 634, brand: "Dinto", name: "ブラーグローイーリップティント 31", color: "#9C6A64", matte: false },
+      { id: 635, brand: "Dinto", name: "ブラーグローイーリップティント 32", color: "#9A6973", matte: false },
+      { id: 636, brand: "Dinto", name: "ブラーグローイーリップティント 33", color: "#8B5A57", matte: false },
+      { id: 637, brand: "Dinto", name: "ブラーグローイーリップティント 34", color: "#C97985", matte: false },
+      { id: 638, brand: "Dinto", name: "ブラーグローイーリップティント 01", color: "#C36F5F", matte: false },
+      { id: 639, brand: "Dinto", name: "ブラーグローイーリップティント 02", color: "#CC4345", matte: false },
+      { id: 640, brand: "Dinto", name: "ブラーグローイーリップティント 03", color: "#D74F41", matte: false },
+      { id: 641, brand: "Dinto", name: "ブラーグローイーリップティント 04", color: "#C62934", matte: false },
+      { id: 642, brand: "Dinto", name: "ブラーグローイーリップティント 05", color: "#DB2B4C", matte: false },
+      { id: 643, brand: "Dinto", name: "ブラーグローイーリップティント 06", color: "#B3586C", matte: false },
+      { id: 644, brand: "Dinto", name: "ブラーグローイーリップティント 07", color: "#7B2433", matte: false },
+      { id: 645, brand: "Dinto", name: "ブラーグローイーリップティント 08", color: "#D16C75", matte: false },
+      { id: 646, brand: "Dinto", name: "ブラーグローイーリップティント 09", color: "#C6587A", matte: false },
+      { id: 647, brand: "Dinto", name: "ブラーグローイーリップティント 10", color: "#A31F35", matte: false },
+      { id: 648, brand: "Dinto", name: "ブラーグローイーリップティント 11", color: "#A55B4E", matte: false },
+      { id: 649, brand: "Dinto", name: "ブラーグローイーリップティント 12", color: "#B2434E", matte: false },
+      { id: 650, brand: "Dinto", name: "ブラーグローイーリップティント 13", color: "#D9566E", matte: false },
+      { id: 651, brand: "Dinto", name: "ブラーグローイーリップティント 14", color: "#9F5146", matte: false },
+      { id: 652, brand: "Dinto", name: "ブラーグローイーリップティント 15", color: "#751419", matte: false },
+      { id: 653, brand: "Dinto", name: "ブラーグローイーリップティント 16", color: "#E14F77", matte: false },
+      { id: 654, brand: "Dinto", name: "ブラーグローイーリップティント 17", color: "#F36D6B", matte: false },
+      { id: 655, brand: "Dinto", name: "ブラーグローイーリップティント 26", color: "#AB6458", matte: false },
+      { id: 656, brand: "Dinto", name: "ブラーグローイーリップティント 27", color: "#B36561", matte: false },
+      { id: 657, brand: "Cipicipi", name: "デューイフィルムティント 01", color: "#8B3A3C", matte: false },
+      { id: 658, brand: "Cipicipi", name: "デューイフィルムティント 02", color: "#D47783", matte: false },
+      { id: 659, brand: "Cipicipi", name: "デューイフィルムティント 09", color: "#C85246", matte: false },
+      { id: 660, brand: "Cipicipi", name: "デューイフィルムティント 10", color: "#D24A69", matte: false },
+      { id: 661, brand: "Cipicipi", name: "デューイフィルムティント 11", color: "#7A2E33", matte: false },
+      { id: 662, brand: "Cipicipi", name: "デューイフィルムティント 12", color: "#95525B", matte: false },
+      { id: 663, brand: "Cipicipi", name: "デューイフィルムティント 13", color: "#A14264", matte: false },
+      { id: 664, brand: "Cipicipi", name: "デューイフィルムティント 102", color: "#62242D", matte: false },
+      { id: 665, brand: "Cipicipi", name: "デューイフィルムティント R 01", color: "#B24A58", matte: false },
+      { id: 666, brand: "Cipicipi", name: "デューイフィルムティント R 02", color: "#DE7273", matte: false },
+      { id: 667, brand: "Cipicipi", name: "デューイフィルムティント R 03", color: "#CF6D73", matte: false },
+      { id: 668, brand: "Cipicipi", name: "デューイフィルムティント R 04", color: "#C96D5D", matte: false },
+      { id: 669, brand: "Cipicipi", name: "デューイフィルムティント R 05", color: "#C6717D", matte: false },
+      { id: 670, brand: "Cipicipi", name: "デューイフィルムティント R 06", color: "#C05C7D", matte: false },
+      { id: 671, brand: "Cipicipi", name: "デューイフィルムティント R 101", color: "#8B3232", matte: false },
+      { id: 672, brand: "Cipicipi", name: "デューイフィルムティント R P01", color: "#A85A5E", matte: false },
+      { id: 673, brand: "Cipicipi", name: "デューイフィルムティント R L01", color: "#E34A6E", matte: false },
+      { id: 674, brand: "Wonjungyo", name: "リップステッカー 01 メルティングベージュ", color: "#B86759", matte: false },
+      { id: 675, brand: "Wonjungyo", name: "リップステッカー 02 アンティークピンク", color: "#A95965", matte: false },
+      { id: 676, brand: "Wonjungyo", name: "リップステッカー 03 カントリーローズ", color: "#903B38", matte: false },
+      { id: 677, brand: "Wonjungyo", name: "リップステッカー 04 バーニングモーブ", color: "#8D3D55", matte: false },
+      { id: 678, brand: "Wonjungyo", name: "リップステッカー 05 ブリックブラウン", color: "#964A31", matte: false },
+      { id: 679, brand: "Wonjungyo", name: "リップステッカー 06 クラシックトープ", color: "#823C3A", matte: false },
+      { id: 680, brand: "Wonjungyo", name: "キャンディーグロウティント 01 Chai Tea Pink", color: "#DF8286", matte: false },
+      { id: 681, brand: "Wonjungyo", name: "キャンディーグロウティント 02 Rich Caramel", color: "#B25D59", matte: false },
+      { id: 682, brand: "Wonjungyo", name: "キャンディーグロウティント 03 Peach Squeeze", color: "#DC7B70", matte: false },
+      { id: 683, brand: "Wonjungyo", name: "キャンディーグロウティント 04 Water Melon Juice", color: "#E43A52", matte: false },
+      { id: 684, brand: "Wonjungyo", name: "キャンディーグロウティント 05 Cranberry Gelee", color: "#C63D56", matte: false },
+      { id: 685, brand: "Wonjungyo", name: "キャンディーグロウティント 06 Milky Plum", color: "#B65768", matte: false },
+      { id: 686, brand: "Wonjungyo", name: "キャンディーグロウティント 102", color: "#B46466", matte: false },
+      { id: 687, brand: "Wonjungyo", name: "キャンディーグロウティント P1", color: "#E05A64", matte: false },
+      { id: 688, brand: "Wonjungyo", name: "フォンダンリップ 01", color: "#9F5A6B", matte: false },
+      { id: 689, brand: "Wonjungyo", name: "フォンダンリップ 02", color: "#BF6354", matte: false },
+      { id: 690, brand: "Wonjungyo", name: "フォンダンリップ 03", color: "#EA5368", matte: false },
+      { id: 691, brand: "Wonjungyo", name: "フォンダンリップ 04", color: "#C77A8A", matte: false },
+      { id: 692, brand: "Wonjungyo", name: "フォンダンリップ 05", color: "#A1625F", matte: false },
+      { id: 693, brand: "b idol", name: "むっちリップR 01", color: "#C34B3B", matte: true },
+      { id: 694, brand: "b idol", name: "むっちリップR 02", color: "#CB3821", matte: true },
+      { id: 695, brand: "b idol", name: "むっちリップR 03", color: "#992430", matte: true },
+      { id: 696, brand: "b idol", name: "むっちリップR 04", color: "#DF7465", matte: true },
+      { id: 697, brand: "b idol", name: "むっちリップR 05", color: "#C45524", matte: true },
+      { id: 698, brand: "b idol", name: "むっちリップR 101", color: "#AE3764", matte: true },
+      { id: 699, brand: "b idol", name: "むっちリップR 102", color: "#B35F55", matte: true },
+      { id: 700, brand: "b idol", name: "むっちリップR 103", color: "#D67A6B", matte: true },
+      { id: 701, brand: "b idol", name: "つやぷるリップR 01", color: "#C34B3B", matte: false },
+      { id: 702, brand: "b idol", name: "つやぷるリップR 02", color: "#CB3821", matte: false },
+      { id: 703, brand: "b idol", name: "つやぷるリップR 03", color: "#992430", matte: false },
+      { id: 704, brand: "b idol", name: "つやぷるリップR 04", color: "#DF7465", matte: false },
+      { id: 705, brand: "b idol", name: "つやぷるリップR 05", color: "#C45524", matte: false },
+      { id: 706, brand: "b idol", name: "つやぷるリップR 101", color: "#AE3764", matte: false },
+      { id: 707, brand: "b idol", name: "つやぷるリップR 102", color: "#B35F55", matte: false },
+      { id: 708, brand: "b idol", name: "つやぷるリップR 103", color: "#D67A6B", matte: false },
+      { id: 709, brand: "Fujiko", name: "ニュアンスラップティント 01", color: "#EA6B5E", matte: false },
+      { id: 710, brand: "Fujiko", name: "ニュアンスラップティント 02", color: "#DF3E31", matte: false },
+      { id: 711, brand: "Fujiko", name: "ニュアンスラップティント 03", color: "#A3191D", matte: false },
+      { id: 712, brand: "Fujiko", name: "ニュアンスラップティント 06", color: "#EB8178", matte: false },
+      { id: 713, brand: "Fujiko", name: "ニュアンスラップティント 07", color: "#E45B6C", matte: false },
+      { id: 714, brand: "Fujiko", name: "ニュアンスラップティント 08", color: "#D8685C", matte: false },
+      { id: 715, brand: "Fujiko", name: "ニュアンスラップティント 09", color: "#B05345", matte: false },
+      { id: 716, brand: "Fujiko", name: "ニュアンスラップティント 101", color: "#7D1115", matte: false },
+      { id: 717, brand: "hince", name: "ロウグロウジェルティント 01", color: "#B97762", matte: false },
+      { id: 718, brand: "hince", name: "ロウグロウジェルティント 02", color: "#C25656", matte: false },
+      { id: 719, brand: "hince", name: "ロウグロウジェルティント 03", color: "#C85949", matte: false },
+      { id: 720, brand: "hince", name: "ロウグロウジェルティント 04", color: "#C22F31", matte: false },
+      { id: 721, brand: "hince", name: "ロウグロウジェルティント 05", color: "#C12A54", matte: false },
+      { id: 722, brand: "hince", name: "ロウグロウジェルティント 06", color: "#B05574", matte: false },
+      { id: 723, brand: "hince", name: "ロウグロウジェルティント 07", color: "#A33A4E", matte: false },
+      { id: 724, brand: "hince", name: "ロウグロウジェルティント 08", color: "#E17088", matte: false },
+      { id: 725, brand: "hince", name: "ロウグロウジェルティント 09", color: "#BE547C", matte: false },
+      { id: 726, brand: "hince", name: "ロウグロウジェルティント 10", color: "#B32541", matte: false },
+      { id: 727, brand: "hince", name: "ロウグロウジェルティント 11", color: "#A65A4F", matte: false },
+      { id: 728, brand: "hince", name: "ロウグロウジェルティント 12", color: "#BD4C55", matte: false },
+      { id: 729, brand: "hince", name: "ロウグロウジェルティント 13", color: "#D2536A", matte: false },
+      { id: 730, brand: "hince", name: "ロウグロウジェルティント 14", color: "#9D5144", matte: false },
+      { id: 731, brand: "hince", name: "ロウグロウジェルティント 15", color: "#8D121B", matte: false },
+      { id: 732, brand: "hince", name: "ロウグロウジェルティント 16", color: "#E3648B", matte: false },
+      { id: 733, brand: "hince", name: "ロウグロウジェルティント 17", color: "#EE6C6E", matte: false },
+      { id: 734, brand: "hince", name: "ロウグロウジェルティント 26", color: "#8B514A", matte: false },
+      { id: 735, brand: "hince", name: "ロウグロウジェルティント 27", color: "#A0595F", matte: false },
+      { id: 736, brand: "hince", name: "ロウグロウジェルティント 31", color: "#AA7C73", matte: false },
+      { id: 737, brand: "hince", name: "ロウグロウジェルティント 32", color: "#7F636F", matte: false },
+      { id: 738, brand: "hince", name: "ロウグロウジェルティント 33", color: "#774648", matte: false },
+      { id: 739, brand: "hince", name: "ニューブラーティント 01", color: "#DCA496", matte: true },
+      { id: 740, brand: "hince", name: "ニューブラーティント 02", color: "#EEA5AB", matte: true },
+      { id: 741, brand: "hince", name: "ニューブラーティント 03", color: "#DA9893", matte: true },
+      { id: 742, brand: "hince", name: "ニューブラーティント 04", color: "#D69391", matte: true },
+      { id: 743, brand: "hince", name: "ニューブラーティント 05", color: "#D7877A", matte: true },
+      { id: 744, brand: "hince", name: "ニューブラーティント 06", color: "#DE8075", matte: true },
+      { id: 745, brand: "hince", name: "ニューブラーティント 07", color: "#D47670", matte: true },
+      { id: 746, brand: "hince", name: "ニューブラーティント 08", color: "#D5596B", matte: true },
+      { id: 747, brand: "hince", name: "ニューブラーティント 09", color: "#A05761", matte: true },
+      { id: 748, brand: "hince", name: "ニューブラーティント 10", color: "#B37265", matte: true },
+      { id: 749, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 01", color: "#C26377", matte: false },
+      { id: 750, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 02", color: "#E98E71", matte: false },
+      { id: 751, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 03", color: "#CD4B3B", matte: false },
+      { id: 752, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 04", color: "#DE7166", matte: false },
+      { id: 753, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 05", color: "#C91D55", matte: false },
+      { id: 754, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 06", color: "#AC425A", matte: false },
+      { id: 755, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 07", color: "#B6512B", matte: false },
+      { id: 756, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 08", color: "#97151D", matte: false },
+      { id: 757, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 09", color: "#D17663", matte: false },
+      { id: 758, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 10", color: "#642C23", matte: false },
+      { id: 759, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 11", color: "#F28981", matte: false },
+      { id: 760, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 12", color: "#E54966", matte: false },
+      { id: 761, brand: "hince", name: "ムードインハンサーウォーターリキッドグロウ 13", color: "#E8575D", matte: false }
+    ];
+  </script>
+
+  <script>
+    // DOM references
+    const colorInput       = document.getElementById('color-input');
+    const colorPreview     = document.getElementById('color-preview');
+    const hexLabel         = document.getElementById('hex-label');
+    const sliderR          = document.getElementById('slider-r');
+    const sliderG          = document.getElementById('slider-g');
+    const sliderB          = document.getElementById('slider-b');
+    const valR             = document.getElementById('val-r');
+    const valG             = document.getElementById('val-g');
+    const valB             = document.getElementById('val-b');
+    const searchBtn        = document.getElementById('search-btn');
+    const resultsContainer = document.getElementById('results-container');
+    const resultsList      = document.getElementById('results-list');
+
+    function hexToRgb(hex) {
+      const clean = hex.replace('#', '');
+      return {
+        r: parseInt(clean.substring(0, 2), 16),
+        g: parseInt(clean.substring(2, 4), 16),
+        b: parseInt(clean.substring(4, 6), 16)
+      };
+    }
+
+    function updateSliderStyle(slider, channel) {
+      const val = parseInt(slider.value);
+      const pct = (val / 255) * 100;
+      const c = {
+        r: { fill: '#C07070', empty: '#F0D8D8' },
+        g: { fill: '#70A870', empty: '#D8EDD8' },
+        b: { fill: '#7090C8', empty: '#D8E0F0' }
+      }[channel];
+      slider.style.background =
+        `linear-gradient(to right, ${c.fill} 0%, ${c.fill} ${pct}%, ${c.empty} ${pct}%, ${c.empty} 100%)`;
+    }
+
+    function syncSlidersFromHex(hex) {
+      const { r, g, b } = hexToRgb(hex);
+      sliderR.value = r; valR.textContent = r; updateSliderStyle(sliderR, 'r');
+      sliderG.value = g; valG.textContent = g; updateSliderStyle(sliderG, 'g');
+      sliderB.value = b; valB.textContent = b; updateSliderStyle(sliderB, 'b');
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map(v => Number(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    function applyColor(hex) {
+      colorPreview.style.backgroundColor = hex;
+      hexLabel.textContent = hex.toUpperCase();
+    }
+
+    // 色系統を判定する関数
+    function getColorCategory(r, g, b) {
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const l = (max + min) / 2 / 255;
+      const d = max - min;
+      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)) / 255;
+      let h = 0;
+      if (d !== 0) {
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+        else if (max === g) h = ((b - r) / d + 2) * 60;
+        else h = ((r - g) / d + 4) * 60;
+      }
+      // 彩度が低い場合
+      if (s < 0.12) {
+        if (l > 0.85) return 'ホワイト系';
+        if (l > 0.6) return 'ベージュ系';
+        if (l > 0.3) return 'グレー系';
+        return 'ダーク系';
+      }
+      // 明度が非常に低い
+      if (l < 0.15) return 'ダーク系';
+      // 色相で分類
+      if (h < 10 || h >= 350) return 'レッド系';
+      if (h < 25) return 'コーラル系';
+      if (h < 40) return 'オレンジ系';
+      if (h < 50) return 'ベージュ系';
+      if (h < 70) return 'ブラウン系';
+      if (h < 170) return 'グリーン系';
+      if (h < 260) return 'ブルー系';
+      if (h < 290) return 'パープル系';
+      if (h < 330) return 'モーブ・ローズ系';
+      return 'ピンク系';
+    }
+
+    colorInput.addEventListener('input', (e) => {
+      const color = e.target.value.toUpperCase();
+      applyColor(color);
+      syncSlidersFromHex(color);
+    });
+
+    function onSliderChange() {
+      const hex = rgbToHex(sliderR.value, sliderG.value, sliderB.value);
+      colorInput.value = hex;
+      applyColor(hex);
+      valR.textContent = sliderR.value; updateSliderStyle(sliderR, 'r');
+      valG.textContent = sliderG.value; updateSliderStyle(sliderG, 'g');
+      valB.textContent = sliderB.value; updateSliderStyle(sliderB, 'b');
+    }
+    sliderR.addEventListener('input', onSliderChange);
+    sliderG.addEventListener('input', onSliderChange);
+    sliderB.addEventListener('input', onSliderChange);
+
+    // Color matching function
+    function calculateMatch(hex1, hex2) {
+      const rgb1 = hexToRgb(hex1);
+      const rgb2 = hexToRgb(hex2);
+      const dist = Math.sqrt(
+        Math.pow(rgb1.r - rgb2.r, 2) +
+        Math.pow(rgb1.g - rgb2.g, 2) +
+        Math.pow(rgb1.b - rgb2.b, 2)
+      );
+      return Math.round(Math.max(0, 100 - (dist / 4.4)));
+    }
+
+    // Init
+    syncSlidersFromHex(colorInput.value);
+    applyColor(colorInput.value);
+
+
+    // Qoo10 affiliate link mapping
+    function getQoo10Link(brand, name) {
+      const map = [
+        { brand: 'milktouch',       kw: 'ジェリーフィット',          url: 'https://m.qoo10.jp/su/1459144126/Q177209338' },
+        { brand: 'milktouch',       kw: '花雨グロス',                url: 'https://m.qoo10.jp/su/1459144061/Q177209338' },
+        { brand: 'rom&nd',          kw: 'グラスティングカラーグロス', url: 'https://m.qoo10.jp/su/1459144154/Q177209338' },
+        { brand: 'rom&nd',          kw: 'グラスティングメルティングバーム', url: 'https://m.qoo10.jp/su/1459144173/Q177209338' },
+        { brand: 'rom&nd',          kw: 'ジューシーラスティングティント', url: 'https://m.qoo10.jp/su/1459144198/Q177209338' },
+        { brand: 'rom&nd',          kw: 'ゼロマット',                url: 'https://m.qoo10.jp/su/1459553849/Q177209338' },
+        { brand: 'rom&nd',          kw: 'ゼロベルベット',            url: 'https://m.qoo10.jp/su/1459553782/Q177209338' },
+        { brand: 'CLIO',            kw: 'クリスタルグラムティント',   url: 'https://m.qoo10.jp/su/1459144225/Q177209338' },
+        { brand: 'CLIO',            kw: 'グレーズ',                  url: 'https://m.qoo10.jp/su/1459144240/Q177209338' },
+        { brand: 'LAKA',            kw: 'デビル',                    url: 'https://m.qoo10.jp/su/1459144280/Q177209338' },
+        { brand: 'LAKA',            kw: 'フルーティ',                url: 'https://m.qoo10.jp/su/1459144312/Q177209338' },
+        { brand: 'LAKA',            kw: 'マキシ',                    url: 'https://m.qoo10.jp/su/1459144323/Q177209338' },
+        { brand: 'LAKA',            kw: 'ボンディング',              url: 'https://m.qoo10.jp/su/1459144336/Q177209338' },
+        { brand: 'LAKA',            kw: 'ポッピング',                url: 'https://m.qoo10.jp/su/1459144356/Q177209338' },
+        { brand: 'TIRTIR',          kw: 'ウォーター',                url: 'https://m.qoo10.jp/su/1459144385/Q177209338' },
+        { brand: 'peripera',        kw: 'インク',                    url: 'https://m.qoo10.jp/su/1459144418/Q177209338' },
+        { brand: 'dasique',         kw: 'グロウ',                    url: 'https://m.qoo10.jp/su/1459144495/Q177209338' },
+        { brand: 'dasique',         kw: 'デュイティント',            url: 'https://m.qoo10.jp/su/1459144488/Q177209338' },
+        { brand: 'BBIA',            kw: 'ローティント',              url: 'https://m.qoo10.jp/su/1459144532/Q177209338' },
+        { brand: 'BBIA',            kw: 'グローリップ',              url: 'https://m.qoo10.jp/su/1459144548/Q177209338' },
+        { brand: 'fwee',            kw: '3Dボリューミングティント',  url: 'https://m.qoo10.jp/su/1459144625/Q177209338' },
+        { brand: 'fwee',            kw: 'ボリューミンググロス',      url: 'https://m.qoo10.jp/su/1459144646/Q177209338' },
+        { brand: 'ENTROPY MAKEUP',  kw: '',                          url: 'https://m.qoo10.jp/su/1459553565/Q177209338' },
+        { brand: 'INTOYOU',         kw: '',                          url: 'https://m.qoo10.jp/su/1459553745/Q177209338' },
+        { brand: 'AMUSE',           kw: 'ジェルフィットグロス',      url: 'https://m.qoo10.jp/su/1460246547/Q177209338' },
+        { brand: 'Dinto',           kw: 'ブラーグローイー',          url: 'https://m.qoo10.jp/su/1460246689/Q177209338' },
+        { brand: 'Cipicipi',        kw: 'デューイフィルムティント R', url: 'https://m.qoo10.jp/su/1460246864/Q177209338' },
+        { brand: 'Cipicipi',        kw: 'デューイフィルムティント',  url: 'https://m.qoo10.jp/su/1460246963/Q177209338' },
+        { brand: 'Wonjungyo',       kw: 'リップステッカー',          url: 'https://m.qoo10.jp/su/1460247092/Q177209338' },
+        { brand: 'Wonjungyo',       kw: 'キャンディーグロウ',        url: 'https://m.qoo10.jp/su/1460247182/Q177209338' },
+        { brand: 'Wonjungyo',       kw: 'フォンダンリップ',          url: 'https://m.qoo10.jp/su/1460247275/Q177209338' },
+        { brand: 'b idol',          kw: 'つやぷるリップR',           url: 'https://m.qoo10.jp/su/1460247381/Q177209338' },
+        { brand: 'b idol',          kw: 'むっちリップR',             url: 'https://m.qoo10.jp/su/1460247570/Q177209338' },
+        { brand: 'Fujiko',          kw: 'ニュアンスラップ',          url: 'https://m.qoo10.jp/su/1460247634/Q177209338' },
+        { brand: 'hince',           kw: 'ロウグロウジェル',          url: 'https://m.qoo10.jp/su/1460247728/Q177209338' },
+        { brand: 'hince',           kw: 'ニューブラー',              url: 'https://m.qoo10.jp/su/1460247842/Q177209338' },
+        { brand: 'hince',           kw: 'ムードインハンサー',        url: 'https://m.qoo10.jp/su/1460247983/Q177209338' },
+      ];
+      for (const e of map) {
+        if (e.brand === brand && (e.kw === '' || name.includes(e.kw))) return e.url;
+      }
+      return null;
+    }
+
+    // Amazon affiliate search link (luxury brands excluded)
+    function getAmazonLink(brand, name) {
+      const q = encodeURIComponent(brand + ' ' + name.replace(/\s*\d+\S*$/, '').trim());
+      return 'https://www.amazon.co.jp/s?k=' + q + '&tag=oiwaraeru22-22';
+    }
+
+    searchBtn.addEventListener('click', () => {
+      const selectedColor = colorInput.value;
+
+      // GA4: 検索された色と系統を記録
+      if (typeof gtag === 'function') {
+        const rgb = hexToRgb(selectedColor);
+        const category = getColorCategory(rgb.r, rgb.g, rgb.b);
+        gtag('event', 'color_search', {
+          searched_color: selectedColor.toUpperCase(),
+          color_category: category
+        });
+      }
+
+      const matches = LIPSTICK_DB.map(item => ({
+        ...item,
+        matchPercent: calculateMatch(selectedColor, item.color)
+      }));
+      const sorted = matches.sort((a, b) => b.matchPercent - a.matchPercent);
+
+      // ブランド分散: まず各ブランドから1件ずつ選ぶ
+      const seenBrands = {};
+      const diverse = [];
+      for (const item of sorted) {
+        if (!seenBrands[item.brand]) {
+          seenBrands[item.brand] = true;
+          diverse.push(item);
+          if (diverse.length >= 6) break;
+        }
+      }
+      // 6件未満なら残りで補完（ブランド重複OK）
+      if (diverse.length < 6) {
+        const pickedIds = new Set(diverse.map(d => d.id));
+        for (const item of sorted) {
+          if (!pickedIds.has(item.id)) {
+            diverse.push(item);
+            if (diverse.length >= 6) break;
+          }
+        }
+      }
+
+      renderResults(diverse);
+    });
+
+
+
+    // ── 製品名翻訳辞書 ──
+    const productNameI18n = {
+      ko: {
+        '#花雨グロス デューステインシアーリップグロス': '#화우 글로스 듀 스테인 시어 립 글로스',
+        '3Dジェリーリップ': '3D 젤리 립',
+        '3Dボリューミングティント': '3D 볼류밍 틴트',
+        'むちぷるティント': '무치푸루 틴트',
+        'アディクト リップ グロウ': 'Addict Lip Glow',
+        'アディクトリップマキシマイザー': 'Addict Lip Maximizer',
+        'インク ムード グロイ ティント': '잉크 무드 글로이 틴트',
+        'ウォータリーティントリップ': '워터리 틴트 립',
+        'ウォーターリズムグロウティント': '워터 리듬 글로우 틴트',
+        'クリスタルグラムティント': '크리스탈 글램 틴트',
+        'グラスティングカラーグロス': '글래스팅 컬러 글로스',
+        'グラスティングメルティングバーム': '글래스팅 멜팅 밤',
+        'グラスティントシロップ': '글래스 틴트 시럽',
+        'グレーズ リップ セラム': '글레이즈 립 세럼',
+        'グローリップティント': '글로우 립 틴트',
+        'ザ マット リップ リキッド': '더 매트 립 리퀴드',
+        'ザジューシーラスティングティント': '쥬시 래스팅 틴트',
+        'ジェリーフィットティンティッドグロウティント': '젤리핏 틴티드 글로우 틴트',
+        'ジューシーデュイティント': '쥬시 듀이 틴트',
+        'ジューシーデューイグロウティント': '쥬시 듀이 글로우 틴트',
+        'ステイオンバームルージュ': '스테이 온 밤 루즈',
+        'スーパーマットリップ＆チークマッド リップ＆チーク': '슈퍼 매트 립 & 치크 매드 립 & 치크',
+        'ゼロベルベットティント': '제로 벨벳 틴트',
+        'ゼロマットリップスティック': '제로 매트 립스틱',
+        'チャームティント　グロッシージェル': '참 틴트 글로시 젤',
+        'デビルリップ': '데빌 립',
+        'パウダー キス ヘイジー マット リップスティック': 'Powder Kiss Hazy Matte Lipstick',
+        'フルーティグラムティント': '프루티 글램 틴트',
+        'ボンディンググロウリップスティック': '본딩 글로우 립스틱',
+        'ポッピングバルーンティント': '팝핑 벌룬 틴트',
+        'マキシグレイヤーティント': '맥시 글레이어 틴트',
+        'ラスターガラス リップスティック': 'Luster Glass Lipstick',
+        'ラスティングリップスティック': '래스팅 립스틱',
+        'ラブシャイン キャンディ グロウ バーム': 'Loveshiner Candy Glow Balm',
+        'ラブシャイン グロスプランパー': 'Loveshiner Gloss Plumper',
+        'ラブシャイン リップスティック': 'Loveshiner Lipstick',
+        'リップカラーシールド': '립 컬러 쉴드',
+        'リップティント': '립 틴트',
+        'リップモンスター　スフレマット': '립몬스터 수플레 매트',
+        'ル　ルージュデュオ　ウルトラ　トゥニュ': 'Le Rouge Duo Ultra Tenue',
+        'ローティント': '로우 틴트',
+        'つやぷるリップR': '츠야푸루 립 R',
+        'むっちリップR': '무치 립 R',
+        'キャンディーグロウティント': '캔디 글로우 틴트',
+        'ジェルフィットグロス': '젤 핏 글로스',
+        'デューイフィルムティント': '듀이 필름 틴트',
+        'デューイフィルムティント R': '듀이 필름 틴트 R',
+        'ニュアンスラップティント': '뉘앙스 랩 틴트',
+        'ニューブラーティント': '뉴 블러 틴트',
+        'パーソナルリップクリーム': '퍼스널 립 크림',
+        'フォンダンリップ': '퐁당 립',
+        'ブラーグローイーリップティント': '블러 글로이 립 틴트',
+        'ムードインハンサーウォーターリキッドグロウ': '무드 인핸서 워터 리퀴드 글로우',
+        'リップステッカー': '립 스티커',
+        'ロウグロウジェルティント': '로우 글로우 젤 틴트',
+      },
+      en: {
+        '#花雨グロス デューステインシアーリップグロス': '#Hanau Gloss Dew Stain Sheer Lip Gloss',
+        '3Dジェリーリップ': '3D Jelly Lip',
+        '3Dボリューミングティント': '3D Voluming Tint',
+        'むちぷるティント': 'Muchipuru Tint',
+        'アディクト リップ グロウ': 'Addict Lip Glow',
+        'アディクトリップマキシマイザー': 'Addict Lip Maximizer',
+        'インク ムード グロイ ティント': 'Ink Mood Glowy Tint',
+        'ウォータリーティントリップ': 'Watery Tint Lip',
+        'ウォーターリズムグロウティント': 'Water Rhythm Glow Tint',
+        'クリスタルグラムティント': 'Crystal Glam Tint',
+        'グラスティングカラーグロス': 'Glasting Color Gloss',
+        'グラスティングメルティングバーム': 'Glasting Melting Balm',
+        'グラスティントシロップ': 'Glass Tint Syrup',
+        'グレーズ リップ セラム': 'Glaze Lip Serum',
+        'グローリップティント': 'Glow Lip Tint',
+        'ザ マット リップ リキッド': 'The Matte Lip Liquid',
+        'ザジューシーラスティングティント': 'Juicy Lasting Tint',
+        'ジェリーフィットティンティッドグロウティント': 'Jellyfit Tinted Glow Tint',
+        'ジューシーデュイティント': 'Juicy Dewy Tint',
+        'ジューシーデューイグロウティント': 'Juicy Dewy Glow Tint',
+        'ステイオンバームルージュ': 'Stay On Balm Rouge',
+        'スーパーマットリップ＆チークマッド リップ＆チーク': 'Super Matte Lip & Cheek Mud',
+        'ゼロベルベットティント': 'Zero Velvet Tint',
+        'ゼロマットリップスティック': 'Zero Matte Lipstick',
+        'チャームティント　グロッシージェル': 'Charm Tint Glossy Gel',
+        'デビルリップ': 'Devil Lip',
+        'パウダー キス ヘイジー マット リップスティック': 'Powder Kiss Hazy Matte Lipstick',
+        'フルーティグラムティント': 'Fruity Glam Tint',
+        'ボンディンググロウリップスティック': 'Bonding Glow Lipstick',
+        'ポッピングバルーンティント': 'Popping Balloon Tint',
+        'マキシグレイヤーティント': 'Maxi Glayer Tint',
+        'ラスターガラス リップスティック': 'Luster Glass Lipstick',
+        'ラスティングリップスティック': 'Lasting Lipstick',
+        'ラブシャイン キャンディ グロウ バーム': 'Loveshiner Candy Glow Balm',
+        'ラブシャイン グロスプランパー': 'Loveshiner Gloss Plumper',
+        'ラブシャイン リップスティック': 'Loveshiner Lipstick',
+        'リップカラーシールド': 'Lip Colour Shield',
+        'リップティント': 'Lip Tint',
+        'リップモンスター　スフレマット': 'Lip Monster Souffle Matte',
+        'ル　ルージュデュオ　ウルトラ　トゥニュ': 'Le Rouge Duo Ultra Tenue',
+        'ローティント': 'Raw Tint',
+        'つやぷるリップR': 'Tsuyapuru Lip R',
+        'むっちリップR': 'Mucchi Lip R',
+        'キャンディーグロウティント': 'Candy Glow Tint',
+        'ジェルフィットグロス': 'Gel Fit Gloss',
+        'デューイフィルムティント': 'Dewy Film Tint',
+        'デューイフィルムティント R': 'Dewy Film Tint R',
+        'ニュアンスラップティント': 'Nuance Wrap Tint',
+        'ニューブラーティント': 'New Blur Tint',
+        'パーソナルリップクリーム': 'Personal Lip Cream',
+        'フォンダンリップ': 'Fondant Lip',
+        'ブラーグローイーリップティント': 'Blur Glowy Lip Tint',
+        'ムードインハンサーウォーターリキッドグロウ': 'Mood Enhancer Water Liquid Glow',
+        'リップステッカー': 'Lip Sticker',
+        'ロウグロウジェルティント': 'Raw Glow Gel Tint',
+      }
+    };
+
+    function translateProductName(name, lang) {
+      if (lang === 'ja') return name;
+      const dict = productNameI18n[lang];
+      if (!dict) return name;
+      // 製品名部分（色番号の前の部分）を検索して置換
+      for (const [ja, translated] of Object.entries(dict)) {
+        if (name.includes(ja)) {
+          return name.replace(ja, translated);
+        }
+      }
+      return name;
+    }
+
+    // ── i18n 多言語対応 ──
+    const i18n = {
+      ja: {
+        title: 'LipMatch - 理想の色を見つけよう',
+        subtitle: '理想の色を、あなたの唇へ。',
+        cardLabel: 'あなたの理想のリップカラー',
+        tapHint: '丸をタップして色を選択',
+        searchBtn: '似ているリップを探す \u00a0→',
+        resultsHeading: 'あなたへのおすすめ',
+        disclaimer: '※ 表示される色はお使いのデバイスの画面設定や光の加減により実際の色と異なる場合があります。また、唇の元の色や質感によっても仕上がりは個人差があります。',
+        admin: '管理者',
+        matte: 'MATTE',
+        match: 'MATCH',
+        fontBody: "'Shippori Mincho', serif",
+        tabColor: '🎨 カラーを選ぶ',
+        tabPhoto: '📷 写真から抽出',
+        uploadHint: '画像をタップして選択',
+        pickHint: 'タップして色を抽出',
+        extractedLabel: '抽出した色',
+        useColorBtn: 'この色で検索',
+      },
+      ko: {
+        title: 'LipMatch - 이상적인 색을 찾아보세요',
+        subtitle: '이상적인 색을, 당신의 입술에.',
+        cardLabel: '나만의 이상적인 립 컬러',
+        tapHint: '원을 탭하여 색상 선택',
+        searchBtn: '비슷한 립 찾기 \u00a0→',
+        resultsHeading: '당신을 위한 추천',
+        disclaimer: '※ 표시되는 색상은 기기의 화면 설정이나 조명에 따라 실제 색상과 다를 수 있습니다. 또한 입술의 원래 색상과 질감에 따라 발색이 달라질 수 있습니다.',
+        admin: '관리자',
+        matte: 'MATTE',
+        match: 'MATCH',
+        fontBody: "'Noto Serif KR', serif",
+        tabColor: '🎨 컬러 선택',
+        tabPhoto: '📷 사진에서 추출',
+        uploadHint: '이미지를 탭하여 선택',
+        pickHint: '탭하여 색상 추출',
+        extractedLabel: '추출한 색상',
+        useColorBtn: '이 색으로 검색',
+      },
+      en: {
+        title: 'LipMatch - Find Your Perfect Shade',
+        subtitle: 'Your perfect shade, for your lips.',
+        cardLabel: 'Your Ideal Lip Colour',
+        tapHint: 'Tap the circle to pick a colour',
+        searchBtn: 'Find Similar Lipsticks \u00a0→',
+        resultsHeading: 'Recommended For You',
+        disclaimer: '※ Colours shown may differ from the actual product depending on your device settings and lighting. Results may also vary based on your natural lip colour and texture.',
+        admin: 'Admin',
+        matte: 'MATTE',
+        match: 'MATCH',
+        fontBody: "'Shippori Mincho', serif",
+        tabColor: '🎨 Pick Colour',
+        tabPhoto: '📷 From Photo',
+        uploadHint: 'Tap to select an image',
+        pickHint: 'Tap image to extract colour',
+        extractedLabel: 'Extracted colour',
+        useColorBtn: 'Search with this colour',
+      }
+    };
+
+    let currentLang = 'ja';
+
+    function switchLang(lang) {
+      currentLang = lang;
+      const t = i18n[lang];
+
+      // Update page title
+      document.getElementById('page-title').textContent = t.title;
+
+      // Update all data-i18n elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.innerHTML = t[key];
+      });
+
+      // Update body font
+      document.body.style.fontFamily = t.fontBody;
+
+      // Update lang-btn active state
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if ((lang === 'ja' && btn.textContent === 'JP') ||
+            (lang === 'ko' && btn.textContent === 'KR') ||
+            (lang === 'en' && btn.textContent === 'EN')) {
+          btn.classList.add('active');
+        }
+      });
+
+      // Update html lang attribute
+      document.documentElement.lang = lang;
+
+      // Re-render results if visible
+      if (resultsContainer.classList.contains('visible') && lastResults.length > 0) {
+        renderResults(lastResults);
+      }
+    }
+
+    let lastResults = [];
+
+    function renderResults(items) {
+      resultsList.innerHTML = '';
+      resultsContainer.classList.add('visible');
+
+      items.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.style.animationDelay = `${index * 0.12}s`;
+        card.innerHTML = `
+          <div class="result-swatch-wrap">
+            <div class="result-swatch" style="background:${item.color}"></div>
+            <div class="result-badge">${index + 1}</div>
+          </div>
+          <div class="result-info">
+            <p class="result-brand">${item.brand}</p>
+            <h3 class="result-name">${translateProductName(item.name, currentLang)}${item.matte ? '<span class="matte-tag">' + i18n[currentLang].matte + '</span>' : ''}</h3>
+            <span class="result-hex-chip">${item.color}</span>
+            <div class="result-shops">
+              ${getQoo10Link(item.brand, item.name) ? `<a href="${getQoo10Link(item.brand, item.name)}" class="shop-btn shop-btn-qoo" target="_blank" rel="noopener">Qoo10</a>` : ''}
+              ${getAmazonLink(item.brand, item.name) ? `<a href="${getAmazonLink(item.brand, item.name)}" class="shop-btn shop-btn-amz" target="_blank" rel="noopener">Amazon</a>` : ''}
+            </div>
+          </div>
+          <div class="result-right">
+            <div class="result-pct">${item.matchPercent}<sup>%</sup></div>
+            <div class="result-match-label">${i18n[currentLang].match}</div>
+            <div class="result-bar"><div class="result-bar-fill" style="width:${item.matchPercent}%"></div></div>
+          </div>
+        `;
+        resultsList.appendChild(card);
+      });
+
+      lastResults = items;
+      resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // GA4: Qoo10/Amazonクリック記録
+      resultsList.querySelectorAll('.shop-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (typeof gtag === 'function') {
+            const card = this.closest('.result-card');
+            const brand = card.querySelector('.result-brand').textContent;
+            const name = card.querySelector('.result-name').textContent;
+            const shop = this.classList.contains('shop-btn-qoo') ? 'Qoo10' : 'Amazon';
+            gtag('event', 'shop_click', {
+              shop_name: shop,
+              product_brand: brand,
+              product_name: name
+            });
+          }
+        });
+      });
+    }
+
+
+    // ══════════════════════════════════════════
+    // 写真からの色抽出機能
+    // ══════════════════════════════════════════
+
+    // モード切り替え（カラーピッカー ↔ 写真抽出）
+    function switchMode(mode) {
+      const photoArea = document.getElementById('photo-area');
+      const colorArea = document.getElementById('color-area');
+      const tabColor  = document.getElementById('tab-color');
+      const tabPhoto  = document.getElementById('tab-photo');
+      if (mode === 'photo') {
+        photoArea.style.display = 'block';
+        colorArea.style.display = 'none';
+        tabColor.classList.remove('active');
+        tabPhoto.classList.add('active');
+      } else {
+        photoArea.style.display = 'none';
+        colorArea.style.display = 'block';
+        tabColor.classList.add('active');
+        tabPhoto.classList.remove('active');
+      }
+    }
+
+    // DOM参照
+    const photoFileInput   = document.getElementById('photo-file-input');
+    const photoCanvas      = document.getElementById('photo-canvas');
+    const photoCtx         = photoCanvas.getContext('2d');
+    const photoPreviewWrap = document.getElementById('photo-preview-wrap');
+    const extractedPreview = document.getElementById('extracted-preview');
+    const extractedSwatch  = document.getElementById('extracted-swatch');
+    const extractedHexEl   = document.getElementById('extracted-hex');
+    const cursorRing       = document.getElementById('cursor-ring');
+    const uploadZone       = document.getElementById('upload-zone');
+
+    // ファイル選択時の処理
+    photoFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          // キャンバスサイズを画像に合わせてセット
+          const maxW = 460;
+          const scale = Math.min(maxW / img.width, 1);
+          photoCanvas.width  = img.width  * scale;
+          photoCanvas.height = img.height * scale;
+          photoCtx.drawImage(img, 0, 0, photoCanvas.width, photoCanvas.height);
+          photoPreviewWrap.classList.add('visible');
+          uploadZone.style.display = 'none';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // クリック / タップで色抽出（共通処理）
+    function extractColorAt(clientX, clientY) {
+      const rect   = photoCanvas.getBoundingClientRect();
+      const scaleX = photoCanvas.width  / rect.width;
+      const scaleY = photoCanvas.height / rect.height;
+      const cx = (clientX - rect.left) * scaleX;
+      const cy = (clientY - rect.top)  * scaleY;
+
+      // 5x5ピクセル平均で安定した色を取得
+      const r_size = 2;
+      const px = photoCtx.getImageData(
+        Math.max(0, Math.round(cx) - r_size),
+        Math.max(0, Math.round(cy) - r_size),
+        r_size * 2 + 1,
+        r_size * 2 + 1
+      );
+      let r = 0, g = 0, b = 0, cnt = 0;
+      for (let i = 0; i < px.data.length; i += 4) {
+        r += px.data[i]; g += px.data[i+1]; b += px.data[i+2]; cnt++;
+      }
+      r = Math.round(r / cnt);
+      g = Math.round(g / cnt);
+      b = Math.round(b / cnt);
+
+      const hex = rgbToHex(r, g, b);
+
+      // カーソルリングをクリック位置に表示
+      cursorRing.style.left    = (clientX - rect.left) + 'px';
+      cursorRing.style.top     = (clientY - rect.top)  + 'px';
+      cursorRing.style.display = 'block';
+      cursorRing.style.borderColor = '#fff';
+      cursorRing.style.background  = hex + '55';
+
+      // 抽出色プレビューを更新
+      extractedSwatch.style.backgroundColor = hex;
+      extractedHexEl.textContent             = hex;
+      extractedPreview.classList.add('visible');
+    }
+
+    // マウスクリック対応
+    photoCanvas.addEventListener('click', (e) => {
+      extractColorAt(e.clientX, e.clientY);
+    });
+
+    // スマホタッチ対応
+    photoCanvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      extractColorAt(t.clientX, t.clientY);
+    }, { passive: false });
+
+    // 「この色で検索」ボタン
+    document.getElementById('use-color-btn').addEventListener('click', () => {
+      const hex = extractedHexEl.textContent;
+      // カラーピッカーに抽出色を反映
+      colorInput.value = hex.toLowerCase();
+      applyColor(hex);
+      syncSlidersFromHex(hex);
+      // カラーピッカータブへ切り替え
+      switchMode('color');
+      // 自動で検索を実行
+      searchBtn.click();
+    });
+  </script>
+
+</body>
+</html>
