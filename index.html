@@ -1968,8 +1968,12 @@
         { brand: 'KANEBO', kw: 'ルージュスターヴァイブラント', url: 'https://link.amazon/B0b1DGlmc' },
         { brand: 'KANEBO', kw: 'ルージュスタードラマ', url: 'https://link.amazon/B09iel2uL' },
       ];
-      // 直接URLが存在する場合は優先（kwの長いものから先にマッチ）
-      const sorted = directMap.filter(e => e.brand === brand).sort((a, b) => b.kw.length - a.kw.length);
+      // 派生シリーズを優先判定（通常「リップモンスター」は最後に評価）
+      const sorted = directMap.filter(e => e.brand === brand).sort((a, b) => {
+        if (a.kw === 'リップモンスター') return 1;
+        if (b.kw === 'リップモンスター') return -1;
+        return b.kw.length - a.kw.length;
+      });
       for (const e of sorted) {
         if (e.kw === '' || name.includes(e.kw)) return e.url;
       }
